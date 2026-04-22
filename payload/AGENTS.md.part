@@ -105,6 +105,23 @@ Local-only shared-server (no Dolt remote). Do **not** run `bd dolt pull` /
   rejected by common sense — the absence of the subsection itself signals "no
   alternatives were discussed."
 
+- **Self-contained** — the description must let an executor who has not seen
+  the conversation start work without asking follow-up questions. Record
+  every constraint agreed in discussion (chosen approach, rejected options,
+  scope boundaries) in METHOD. Do not rely on session memory.
+- **Out of Scope** — when the boundary is non-trivial, add an
+  `### Out of Scope` subsection under METHOD listing what this issue
+  explicitly does not cover (related components deferred, files not to
+  touch, features excluded).
+- **Verification required for file-modifying issues** — add a
+  `## Verification` section with concrete, checkable criteria (files that
+  must exist or not exist, behaviors that must hold). Step 5 of the Agent
+  Workflow executes every item, so the section must be unambiguous.
+- **Pre-creation self-check** — before `bd create`, re-read the description
+  and confirm a reader without conversation context could proceed. If any
+  agreed constraint is missing, or if unresolved choices would change
+  implementation, revise (or ask the user) before creating.
+
 - **Issue type** — `bug` (broken behavior) / `feature` (new functionality) /
   `task` (work item: tests, docs, refactor) / `epic` (large feature with
   subtasks) / `chore` (maintenance).
