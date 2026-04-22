@@ -47,7 +47,7 @@ usage_update() {
 Usage: beads-starter.sh update
 
 Re-inject the current payload into an existing beads-starter installation.
-The prefix is auto-detected from docs/bd-setup.md; the command is
+The prefix is auto-detected from docs/beads-starter/bd-setup.md; the command is
 non-interactive and takes no options.
 
 Errors out if no beads-starter marker region is found, or if the prefix
@@ -206,10 +206,10 @@ do_inject() {
   echo "Injecting beads-starter payload (prefix=${PREFIX})..."
   inject_region ".gitignore" "gitignore.part" "$M_GI_OPEN" "$M_GI_CLOSE"
   inject_region "AGENTS.md" "AGENTS.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
-  inject_region "docs/bd-setup.md" "docs/bd-setup.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
-  inject_region "docs/beads-commands.md" "docs/beads-commands.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+  inject_region "docs/beads-starter/bd-setup.md" "docs/beads-starter/bd-setup.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+  inject_region "docs/beads-starter/beads-commands.md" "docs/beads-starter/beads-commands.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
   ensure_line "CLAUDE.md" "@AGENTS.md"
-  echo "Done. Next: follow docs/bd-setup.md to install and initialize bd."
+  echo "Done. Next: follow docs/beads-starter/bd-setup.md to install and initialize bd."
 }
 
 # --- Subcommand: install ------------------------------------------------------
@@ -262,8 +262,8 @@ cmd_update() {
     shift
   done
 
-  if [[ ! -f docs/bd-setup.md ]] || ! grep -qxF "$M_MD_OPEN" docs/bd-setup.md; then
-    echo "Error: no beads-starter installation detected (docs/bd-setup.md marker missing)." >&2
+  if [[ ! -f docs/beads-starter/bd-setup.md ]] || ! grep -qxF "$M_MD_OPEN" docs/beads-starter/bd-setup.md; then
+    echo "Error: no beads-starter installation detected (docs/beads-starter/bd-setup.md marker missing)." >&2
     echo "Run 'beads-starter.sh install' first." >&2
     exit 1
   fi
@@ -276,10 +276,10 @@ cmd_update() {
         if ($i == "--prefix") { print $(i+1); exit }
       }
     }
-  ' docs/bd-setup.md)
+  ' docs/beads-starter/bd-setup.md)
 
   if [[ -z "${PREFIX:-}" ]]; then
-    echo "Error: could not detect prefix from docs/bd-setup.md." >&2
+    echo "Error: could not detect prefix from docs/beads-starter/bd-setup.md." >&2
     echo "Edit the file manually or run 'beads-starter.sh uninstall' followed by 'install'." >&2
     exit 1
   fi
@@ -331,8 +331,8 @@ cmd_uninstall() {
   echo "Removing marker regions..."
   remove_region ".gitignore" "$M_GI_OPEN" "$M_GI_CLOSE"
   remove_region "AGENTS.md" "$M_MD_OPEN" "$M_MD_CLOSE"
-  remove_region "docs/bd-setup.md" "$M_MD_OPEN" "$M_MD_CLOSE"
-  remove_region "docs/beads-commands.md" "$M_MD_OPEN" "$M_MD_CLOSE"
+  remove_region "docs/beads-starter/bd-setup.md" "$M_MD_OPEN" "$M_MD_CLOSE"
+  remove_region "docs/beads-starter/beads-commands.md" "$M_MD_OPEN" "$M_MD_CLOSE"
   echo "Done."
   cat <<EOF
 
