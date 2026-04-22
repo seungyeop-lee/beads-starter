@@ -93,6 +93,33 @@ inject_region() {
   fi
 }
 
+ensure_line() {
+  local target=$1
+  local line=$2
+
+  mkdir -p "$(dirname "$target")"
+
+  if [[ ! -f "$target" ]]; then
+    printf '%s\n' "$line" > "$target"
+    echo "  added: $target"
+    return 0
+  fi
+
+  if grep -qxF "$line" "$target"; then
+    echo "  unchanged: $target"
+    return 0
+  fi
+
+  if [[ -s "$target" ]]; then
+    if [[ $(tail -c 1 "$target" | wc -l) -eq 0 ]]; then
+      printf '\n' >> "$target"
+    fi
+    printf '\n' >> "$target"
+  fi
+  printf '%s\n' "$line" >> "$target"
+  echo "  updated: $target"
+}
+
 remove_region() {
   local target=$1
   local m_open=$2
@@ -251,4 +278,5 @@ inject_region ".gitignore" "gitignore.part" "$M_GI_OPEN" "$M_GI_CLOSE"
 inject_region "AGENTS.md" "AGENTS.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
 inject_region "docs/bd-setup.md" "docs/bd-setup.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
 inject_region "docs/beads-commands.md" "docs/beads-commands.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+ensure_line "CLAUDE.md" "@AGENTS.md"
 echo "Done. Next: follow docs/bd-setup.md to install and initialize bd."
