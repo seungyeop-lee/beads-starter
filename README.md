@@ -66,6 +66,4 @@ curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/ins
 
 ## 설치 이후
 
-1. `bd` CLI 설치 (`docs/bd-setup.md` 참조)
-2. `docs/bd-setup.md`의 `bd init` 명령 실행
-3. `AGENTS.md`의 워크플로우에 따라 작업
+AI 에이전트에서 `bd init`을 요청해 초기화하세요.
