@@ -4,13 +4,15 @@
 
 `beads-starter`는 [beads](https://github.com/steveyegge/beads) 워크플로우
 규약을 기존 프로젝트 레포에 주입하는 원샷 설치 스크립트입니다. 주된 산출물은
-**`install.sh`**이며, `payload/` 하위 파일들은 그 스크립트가 배포하는
+**`beads-starter.sh`**이며, `payload/` 하위 파일들은 그 스크립트가 배포하는
 페이로드입니다.
+
+스크립트는 `install`, `update`, `uninstall` 세 서브커맨드로 구성됩니다.
 
 ## 구조
 
 ```
-install.sh           # bash 진입점, `curl | bash`로 실행
+beads-starter.sh     # bash 진입점, `curl | bash -s -- <subcommand>`로 실행
 payload/             # 대상 레포에 주입되는 콘텐츠
 ├── gitignore.part          # → 대상 `.gitignore` 마커 구간
 ├── AGENTS.md.part          # → 대상 `AGENTS.md` 마커 구간
@@ -20,10 +22,10 @@ payload/             # 대상 레포에 주입되는 콘텐츠
 ```
 
 각 `.part` 파일은 **마커 구간 안에 들어갈 콘텐츠**이지 완성된 파일이 아닙니다.
-`install.sh`는 실행 시점에 이 파일들을 HTTPS로 가져와(이 레포 `main` 브랜치
-GitHub raw) 대상 파일에 주입합니다.
+`beads-starter.sh`는 실행 시점에 이 파일들을 HTTPS로 가져와(이 레포 `main`
+브랜치 GitHub raw) 대상 파일에 주입합니다.
 
-이 네 파일 외에 `install.sh`는 대상 레포의 `CLAUDE.md`에 `@AGENTS.md`
+이 네 파일 외에 `beads-starter.sh`는 대상 레포의 `CLAUDE.md`에 `@AGENTS.md`
 임포트 한 줄을 추가합니다. 마커 기반이 아니라 "같은 줄이 없을 때만 추가"
 방식이며(`ensure_line`), 한 줄이 범용적이고 안정적이라 언인스톨 시에는
 `CLAUDE.md`를 건드리지 않습니다.
@@ -32,9 +34,10 @@ GitHub raw) 대상 파일에 주입합니다.
 
 아래 네 가지는 어떤 변경에서도 유지되어야 합니다.
 
-1. **멱등성** — `install.sh`를 두 번 실행했을 때의 대상 레포 상태는 한 번
-   실행했을 때와 같아야 합니다. 마커 구간 내부만 교체하고, 마커 밖 콘텐츠는
-   절대 건드리지 않는 방식으로 보장합니다.
+1. **멱등성** — `beads-starter.sh install`(또는 `update`)을 두 번 실행했을
+   때의 대상 레포 상태는 한 번 실행했을 때와 같아야 합니다. 마커 구간
+   내부만 교체하고, 마커 밖 콘텐츠는 절대 건드리지 않는 방식으로
+   보장합니다.
 2. **마커 문자열은 계약** — open/close 마커 문자열은 starter가 관리하는 구간을
    식별하는 안정적 키입니다. 바꾸면 기존 설치본의 멱등성이 깨집니다(다음
    실행이 기존 구간을 찾지 못해 새 구간을 덧붙여 중복 생성됨). 부득이하게
@@ -47,9 +50,9 @@ GitHub raw) 대상 파일에 주입합니다.
 
 ## `payload/*.part` 편집
 
-- `{{PREFIX}}`가 **유일한** 템플릿 변수입니다. `install.sh`가
+- `{{PREFIX}}`가 **유일한** 템플릿 변수입니다. `beads-starter.sh`가
   `sed "s/{{PREFIX}}/${PREFIX}/g"`로 치환합니다. 템플릿 변수를 더 추가하려면
-  `install.sh`도 함께 수정해야 합니다.
+  `beads-starter.sh`도 함께 수정해야 합니다.
 - `AGENTS.md.part`는 `## Beads Workflow`(H2)로 시작합니다. 대상 `AGENTS.md`는
   공유 파일이라 사용자의 H1이 이미 있을 수 있으므로, 주입 콘텐츠는 서브섹션
   레벨에 둡니다.
@@ -59,7 +62,7 @@ GitHub raw) 대상 파일에 주입합니다.
   (`--shared-server`, `--skip-hooks` 등) 하에서 정상인 경고만 나열합니다.
   플래그나 운영 모드를 바꾸는 커밋에서는 이 섹션도 함께 갱신하십시오.
 
-## `install.sh` 편집
+## `beads-starter.sh` 편집
 
 이미 처리한 플랫폼 이슈들입니다. 리그레션에 주의하십시오.
 
@@ -77,25 +80,31 @@ GitHub raw) 대상 파일에 주입합니다.
 페이로드 출처를 현재 작업 트리로 돌려 실행할 수 있습니다.
 
 ```
-PAYLOAD_BASE="file://$(pwd)/payload" bash install.sh --yes
+PAYLOAD_BASE="file://$(pwd)/payload" bash /path/to/beads-starter.sh install --yes
+PAYLOAD_BASE="file://$(pwd)/payload" bash /path/to/beads-starter.sh update
+PAYLOAD_BASE="file://$(pwd)/payload" bash /path/to/beads-starter.sh uninstall --yes
 ```
 
 스크래치 디렉토리(예: `/tmp/beads-starter-test`)에서 실행하고 결과 파일을
 검사하십시오.
 
-`install.sh` 변경 시 반드시 커버해야 할 시나리오:
+`beads-starter.sh` 변경 시 반드시 커버해야 할 시나리오:
 
-1. 최초 설치(빈 디렉토리) — 4개 대상 파일이 마커 구간과 함께 생성.
-2. 재실행(마커 밖에 사용자 콘텐츠를 추가해 둔 상태) — starter 구간만 교체,
-   사용자 콘텐츠 보존.
-3. `--uninstall` — 마커 구간 제거, 구간 밖 콘텐츠 보존.
-4. 마커 불일치(open만 있거나 close만 있는 경우) — 파일을 수정하지 않고
+1. 최초 `install` (빈 디렉토리) — 4개 대상 파일이 마커 구간과 함께 생성.
+2. `install` 재실행(마커 밖에 사용자 콘텐츠를 추가해 둔 상태) — starter
+   구간만 교체, 사용자 콘텐츠 보존.
+3. `update` — 미설치 상태에서는 에러, 설치 상태에서는 기존 prefix를
+   `docs/bd-setup.md`의 `bd init --prefix X` 라인에서 역추출해 멱등 재주입.
+4. `uninstall` — 마커 구간 제거, 구간 밖 콘텐츠 보존.
+5. 마커 불일치(open만 있거나 close만 있는 경우) — 파일을 수정하지 않고
    에러로 종료.
+6. 서브커맨드 누락 / 알 수 없는 서브커맨드 — usage를 출력하고 비영(非零)
+   종료코드로 실패.
 
 커밋 전:
 
 ```
-bash -n install.sh          # 구문 검사
+bash -n beads-starter.sh    # 구문 검사
 ```
 
 ## 릴리스 플로우
@@ -103,9 +112,9 @@ bash -n install.sh          # 구문 검사
 프로덕션 설치 URL은 `main` 브랜치에 하드코딩되어 있습니다.
 
 ```
-https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/install.sh
+https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/beads-starter.sh
 ```
 
-배포 = `main`에 push. 별도의 릴리스 단계는 없습니다. `install.sh`가 페이로드를
-같은 `main` 기준으로 가져오기 때문에, `main`에 올라가는 모든 커밋은
-`install.sh`와 `payload/`가 일관된 상태여야 합니다.
+배포 = `main`에 push. 별도의 릴리스 단계는 없습니다. `beads-starter.sh`가
+페이로드를 같은 `main` 기준으로 가져오기 때문에, `main`에 올라가는 모든
+커밋은 `beads-starter.sh`와 `payload/`가 일관된 상태여야 합니다.

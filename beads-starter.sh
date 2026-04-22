@@ -13,23 +13,71 @@ M_GI_CLOSE="# <<< beads-starter <<<"
 M_MD_OPEN="<!-- >>> beads-starter >>> -->"
 M_MD_CLOSE="<!-- <<< beads-starter <<< -->"
 
-# --- Helpers ------------------------------------------------------------------
+# --- Usage --------------------------------------------------------------------
 
 usage() {
   cat <<'EOF'
-beads-starter installer
+beads-starter — inject beads workflow preset into a repository
 
-Usage: install.sh [--yes] [--uninstall] [-h|--help]
+Usage: beads-starter.sh <command> [options]
 
-  (no flag)    Interactive install
-  --yes, -y    Non-interactive install using defaults
-  --uninstall  Remove beads-starter marker regions from this repo
-  -h, --help   Show this help
+Commands:
+  install     Inject beads-starter payload into the current repository
+  update      Re-inject payload, preserving the existing prefix (non-interactive)
+  uninstall   Remove beads-starter marker regions from the current repository
+
+Run 'beads-starter.sh <command> --help' for command-specific options.
 EOF
 }
 
+usage_install() {
+  cat <<'EOF'
+Usage: beads-starter.sh install [--yes|-y]
+
+Interactive install by default. Prompts for the beads issue prefix
+(defaults to the current directory name) and for confirmation.
+
+Options:
+  --yes, -y   Skip prompts; use the directory name as prefix.
+EOF
+}
+
+usage_update() {
+  cat <<'EOF'
+Usage: beads-starter.sh update
+
+Re-inject the current payload into an existing beads-starter installation.
+The prefix is auto-detected from docs/bd-setup.md; the command is
+non-interactive and takes no options.
+
+Errors out if no beads-starter marker region is found, or if the prefix
+cannot be detected.
+EOF
+}
+
+usage_uninstall() {
+  cat <<'EOF'
+Usage: beads-starter.sh uninstall [--yes|-y]
+
+Remove beads-starter marker regions from the current repository. Files
+that only contained a marker region become empty; delete them manually.
+
+Options:
+  --yes, -y   Skip the confirmation prompt.
+EOF
+}
+
+# --- Helpers ------------------------------------------------------------------
+
 fetch_payload() {
   curl -fsSL "${PAYLOAD_BASE}/${1}"
+}
+
+validate_prefix() {
+  if [[ ! "$1" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    echo "Error: prefix must match [a-zA-Z0-9_-]+ (got: $1)" >&2
+    exit 1
+  fi
 }
 
 inject_region() {
@@ -154,30 +202,111 @@ remove_region() {
   echo "  removed: $target"
 }
 
-# --- Arg parsing --------------------------------------------------------------
+do_inject() {
+  echo "Injecting beads-starter payload (prefix=${PREFIX})..."
+  inject_region ".gitignore" "gitignore.part" "$M_GI_OPEN" "$M_GI_CLOSE"
+  inject_region "AGENTS.md" "AGENTS.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+  inject_region "docs/bd-setup.md" "docs/bd-setup.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+  inject_region "docs/beads-commands.md" "docs/beads-commands.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+  ensure_line "CLAUDE.md" "@AGENTS.md"
+  echo "Done. Next: follow docs/bd-setup.md to install and initialize bd."
+}
 
-YES=0
-UNINSTALL=0
+# --- Subcommand: install ------------------------------------------------------
 
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --yes|-y) YES=1 ;;
-    --uninstall) UNINSTALL=1 ;;
-    -h|--help) usage; exit 0 ;;
-    *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
-  esac
-  shift
-done
+cmd_install() {
+  local yes=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --yes|-y) yes=1 ;;
+      -h|--help) usage_install; exit 0 ;;
+      *) echo "Unknown option for 'install': $1" >&2; usage_install >&2; exit 1 ;;
+    esac
+    shift
+  done
 
-if [[ $YES -eq 0 && ! -r /dev/tty ]]; then
-  echo "Error: interactive mode requires a TTY. Use --yes for non-interactive install." >&2
-  exit 1
-fi
+  if [[ $yes -eq 0 && ! -r /dev/tty ]]; then
+    echo "Error: interactive mode requires a TTY. Use --yes for non-interactive install." >&2
+    exit 1
+  fi
 
-# --- Uninstall ----------------------------------------------------------------
+  local default_prefix
+  default_prefix=$(basename "$PWD")
 
-if [[ $UNINSTALL -eq 1 ]]; then
-  if [[ $YES -eq 0 ]]; then
+  if [[ $yes -eq 1 ]]; then
+    PREFIX="$default_prefix"
+  else
+    printf 'Project prefix for beads issues [%s]: ' "$default_prefix" > /dev/tty
+    read -r input </dev/tty
+    PREFIX="${input:-$default_prefix}"
+    printf 'Proceed? [Y/n]: ' > /dev/tty
+    read -r ans </dev/tty
+    case "$ans" in
+      ""|y|Y|yes|YES) ;;
+      *) echo "Cancelled."; exit 0 ;;
+    esac
+  fi
+
+  validate_prefix "$PREFIX"
+  do_inject
+}
+
+# --- Subcommand: update -------------------------------------------------------
+
+cmd_update() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -h|--help) usage_update; exit 0 ;;
+      *) echo "Unknown option for 'update': $1" >&2; usage_update >&2; exit 1 ;;
+    esac
+    shift
+  done
+
+  if [[ ! -f docs/bd-setup.md ]] || ! grep -qxF "$M_MD_OPEN" docs/bd-setup.md; then
+    echo "Error: no beads-starter installation detected (docs/bd-setup.md marker missing)." >&2
+    echo "Run 'beads-starter.sh install' first." >&2
+    exit 1
+  fi
+
+  PREFIX=$(awk -v mopen="$M_MD_OPEN" -v mclose="$M_MD_CLOSE" '
+    $0 == mopen { inside=1; next }
+    $0 == mclose { inside=0; next }
+    inside {
+      for (i=1; i<=NF; i++) {
+        if ($i == "--prefix") { print $(i+1); exit }
+      }
+    }
+  ' docs/bd-setup.md)
+
+  if [[ -z "${PREFIX:-}" ]]; then
+    echo "Error: could not detect prefix from docs/bd-setup.md." >&2
+    echo "Edit the file manually or run 'beads-starter.sh uninstall' followed by 'install'." >&2
+    exit 1
+  fi
+
+  validate_prefix "$PREFIX"
+  echo "Detected prefix: ${PREFIX}"
+  do_inject
+}
+
+# --- Subcommand: uninstall ----------------------------------------------------
+
+cmd_uninstall() {
+  local yes=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --yes|-y) yes=1 ;;
+      -h|--help) usage_uninstall; exit 0 ;;
+      *) echo "Unknown option for 'uninstall': $1" >&2; usage_uninstall >&2; exit 1 ;;
+    esac
+    shift
+  done
+
+  if [[ $yes -eq 0 ]]; then
+    if [[ ! -r /dev/tty ]]; then
+      echo "Error: interactive mode requires a TTY. Use --yes for non-interactive uninstall." >&2
+      exit 1
+    fi
     printf 'Remove beads-starter markers from this repo? [y/N]: ' > /dev/tty
     read -r ans </dev/tty
     case "$ans" in
@@ -185,13 +314,12 @@ if [[ $UNINSTALL -eq 1 ]]; then
       *) echo "Cancelled."; exit 0 ;;
     esac
   fi
-  # Detect the beads prefix for this repo (used to locate the project's
-  # database inside the shared Dolt server). Best-effort parse of
-  # .beads/metadata.json; falls back to a <prefix> placeholder if missing.
-  detected_prefix=""
+
+  local detected_prefix=""
   if [[ -f .beads/metadata.json ]]; then
     detected_prefix=$(grep -o '"dolt_database"[[:space:]]*:[[:space:]]*"[^"]*"' .beads/metadata.json 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/' || true)
   fi
+  local shared_db_path prefix_note
   if [[ -n "$detected_prefix" ]]; then
     shared_db_path="~/.beads/shared-server/dolt/${detected_prefix}/"
     prefix_note="Detected prefix for this repo: ${detected_prefix}"
@@ -247,36 +375,23 @@ For CLI binary removal (usually you do NOT want this — keep bd
 installed if any other repo might use it), see the "Uninstalling the
 'bd' Binary" section of the upstream guide.
 EOF
-  exit 0
-fi
+}
 
-# --- Install ------------------------------------------------------------------
+# --- Dispatch -----------------------------------------------------------------
 
-DEFAULT_PREFIX=$(basename "$PWD")
-
-if [[ $YES -eq 1 ]]; then
-  PREFIX="$DEFAULT_PREFIX"
-else
-  printf 'Project prefix for beads issues [%s]: ' "$DEFAULT_PREFIX" > /dev/tty
-  read -r input </dev/tty
-  PREFIX="${input:-$DEFAULT_PREFIX}"
-  printf 'Proceed? [Y/n]: ' > /dev/tty
-  read -r ans </dev/tty
-  case "$ans" in
-    ""|y|Y|yes|YES) ;;
-    *) echo "Cancelled."; exit 0 ;;
-  esac
-fi
-
-if [[ ! "$PREFIX" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-  echo "Error: prefix must match [a-zA-Z0-9_-]+ (got: $PREFIX)" >&2
+if [[ $# -eq 0 ]]; then
+  echo "Error: missing command." >&2
+  usage >&2
   exit 1
 fi
 
-echo "Injecting beads-starter payload (prefix=${PREFIX})..."
-inject_region ".gitignore" "gitignore.part" "$M_GI_OPEN" "$M_GI_CLOSE"
-inject_region "AGENTS.md" "AGENTS.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
-inject_region "docs/bd-setup.md" "docs/bd-setup.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
-inject_region "docs/beads-commands.md" "docs/beads-commands.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
-ensure_line "CLAUDE.md" "@AGENTS.md"
-echo "Done. Next: follow docs/bd-setup.md to install and initialize bd."
+cmd="$1"
+shift
+
+case "$cmd" in
+  install)   cmd_install "$@" ;;
+  update)    cmd_update "$@" ;;
+  uninstall) cmd_uninstall "$@" ;;
+  -h|--help) usage; exit 0 ;;
+  *) echo "Error: unknown command: $cmd" >&2; usage >&2; exit 1 ;;
+esac
