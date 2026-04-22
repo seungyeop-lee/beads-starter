@@ -3,6 +3,13 @@
 This section defines project-specific beads workflow conventions. For command
 examples, see [`docs/beads-commands.md`](docs/beads-commands.md).
 
+### Initialization
+
+Before any workflow step below, verify `.beads/` exists at the repository
+root. If it does not, the repo has not been initialized yet — follow
+[`docs/bd-setup.md`](docs/bd-setup.md) end-to-end (install bd, run `bd init`
+with this project's flags, apply the `bd config` follow-ups), then resume.
+
 ### Agent Workflow
 
 Every file-modifying task, including trivial doc edits, follows these 10 steps:
@@ -76,8 +83,7 @@ workflow meaning.
 ### Operating Mode
 
 Local-only shared-server (no Dolt remote). Do **not** run `bd dolt pull` /
-`bd dolt push`. The entire `.beads/` directory is gitignored. Fresh-clone
-setup steps live in [`docs/bd-setup.md`](docs/bd-setup.md).
+`bd dolt push`. The entire `.beads/` directory is gitignored.
 
 ### Issue Content
 

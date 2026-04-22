@@ -66,4 +66,6 @@ curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/ins
 
 ## 설치 이후
 
-AI 에이전트에서 `bd init`을 요청해 초기화하세요.
+AI 에이전트에게 `docs/bd-setup.md`를 따라 bd를 설치·초기화해 달라고
+요청하세요. bd 설치 여부 확인, `bd init`, 후속 `bd config`까지 모두
+해당 문서에 순서대로 정리되어 있습니다.

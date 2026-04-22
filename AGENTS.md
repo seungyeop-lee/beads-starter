@@ -55,6 +55,9 @@ GitHub raw) 대상 파일에 주입합니다.
   레벨에 둡니다.
 - `docs/*.md.part`는 각각 H1으로 시작합니다. starter가 새로 만드는 파일이기
   때문입니다.
+- `docs/bd-setup.md.part`의 `## Expected warnings` 섹션은 현재 프리셋 플래그
+  (`--shared-server`, `--skip-hooks` 등) 하에서 정상인 경고만 나열합니다.
+  플래그나 운영 모드를 바꾸는 커밋에서는 이 섹션도 함께 갱신하십시오.
 
 ## `install.sh` 편집
 
