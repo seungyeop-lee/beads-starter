@@ -1,0 +1,74 @@
+# bd Initial Setup (Fresh Clone)
+
+This project uses **bd (beads)** for all issue tracking, configured in
+**shared-server** mode (local; no remote). Run this one-time setup after
+cloning the repo.
+
+## Check for bd
+
+```
+command -v bd && bd version
+```
+
+If `bd` is already installed, skip to the **Initialize** step below.
+
+## Install bd
+
+The beads team recommends Homebrew. Pick one:
+
+**Homebrew (macOS / Linux, recommended)**
+
+```
+brew install beads
+```
+
+**npm (Node.js users)**
+
+```
+npm install -g @beads/bd
+```
+
+**Install script (other platforms / no package manager)**
+
+```
+curl -sSL https://raw.githubusercontent.com/steveyegge/beads/main/scripts/install.sh | bash
+```
+
+For Windows, Arch AUR, `go install`, or building from source, see the
+[beads installation guide](https://github.com/steveyegge/beads/blob/main/docs/INSTALLING.md).
+
+## Initialize
+
+Run once from the repository root:
+
+```
+bd init --shared-server --prefix {{PREFIX}} --skip-agents --skip-hooks
+bd config set no-git-ops true
+bd config set export.git-add false
+bd config unset sync.remote
+```
+
+## Verify
+
+```
+bd ready --json
+```
+
+## Flag notes
+
+- `--shared-server` — use the shared Dolt server at `~/.beads/shared-server/`;
+  all bd projects on this machine share one server process (faster than the
+  default engine, and convenient for git worktree workflows).
+- `--prefix {{PREFIX}}` — issues are named `{{PREFIX}}-<hash>`.
+- `--skip-agents` — do not regenerate `AGENTS.md` (this repo already ships one
+  via beads-starter).
+- `--skip-hooks` — do not install bd's git hooks.
+- `no-git-ops: true` — suppress bd's automatic Dolt push.
+- `export.git-add: false` — suppress automatic `git add` of
+  `.beads/issues.jsonl`.
+- `unset sync.remote` — remove the default Dolt remote URL set by `bd init`
+  (we run local-only).
+
+## After setup
+
+Follow the workflow in [`../AGENTS.md`](../AGENTS.md).
