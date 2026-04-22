@@ -1,92 +1,106 @@
 # beads-starter
 
-> 기존 프로젝트 레포에 [beads](https://github.com/steveyegge/beads) 워크플로우
-> 프리셋을 주입하는 원샷 설치 스크립트.
+*English · [한국어](README.ko.md)*
+
+> One-shot install script that injects a [beads](https://github.com/steveyegge/beads)
+> workflow preset into an existing project repository.
 >
-> **Unofficial.** beads 공식 프로젝트와 관련 없습니다.
+> **Unofficial.** Not affiliated with the beads project.
 
-## 무엇을 하는가
+## What it does
 
-대상 레포에서 실행하면 아래 네 가지를 마커 구간 형태로 주입합니다.
+When run inside a target repository, it injects the following four things as
+marker-delimited regions.
 
-- `.gitignore` — beads 생성물(`.beads/`, `.dolt/`, `*.db`)을 소스 관리에서
-  제외
-- `AGENTS.md` 섹션 — beads 기반 에이전트 워크플로우(등록부터 종료까지
-  10단계 흐름, 이슈 작성 규칙, 커밋 규약, 셸 안전성)
-- `docs/beads-starter/bd-setup.md` — 최초 `bd init` 설정 가이드 (사용자가 지정한 prefix로
-  템플릿됨)
-- `docs/beads-starter/beads-commands.md` — 자주 쓰는 `bd` 명령어 예제
+- `.gitignore` — excludes beads artifacts (`.beads/`, `.dolt/`, `*.db`) from
+  source control
+- `AGENTS.md` section — beads-based agent workflow (10-step flow from register
+  through close, issue authoring rules, commit conventions, shell safety)
+- `docs/beads-starter/bd-setup.md` — initial `bd init` setup guide (templated
+  with the prefix you choose)
+- `docs/beads-starter/beads-commands.md` — common `bd` command examples
 
-주입되는 모든 콘텐츠는 `beads-starter` 마커 주석으로 감싸져 있어, 재실행 시
-내부만 갱신되고 언인스톨 시에도 마커 밖의 사용자 콘텐츠는 그대로 보존됩니다.
+All injected content is wrapped in `beads-starter` marker comments, so
+re-running only refreshes the inside of those regions, and uninstalling leaves
+content outside the markers untouched.
 
-## 설치
+## Install
 
-대상 레포 루트에서 실행합니다.
+Run from the root of the target repository.
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/beads-starter.sh | bash -s -- install
 ```
 
-대화식 모드에서 beads 이슈 prefix(기본값: 현재 디렉토리 이름)와 진행 여부를
-확인한 뒤 파일을 씁니다.
+Interactive mode prompts for the beads issue prefix (defaults to the current
+directory name) and for confirmation before writing files.
 
-### 비대화식
+### Non-interactive
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/beads-starter.sh | bash -s -- install --yes
 ```
 
-prefix를 현재 디렉토리 이름으로 고정하고 프롬프트 없이 즉시 실행합니다.
+Pins the prefix to the current directory name and runs without prompts.
 
-## 업데이트
+## Update
 
-starter의 payload가 갱신된 뒤 대상 레포를 최신으로 맞추려면:
+After the starter's payload is updated upstream, sync the target repo to
+latest:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/beads-starter.sh | bash -s -- update
 ```
 
-- 마커 구간 **내부만** 현재 `main`의 콘텐츠로 교체됩니다. 마커 밖의 사용자
-  콘텐츠는 그대로 보존됩니다.
-- prefix는 기존 `docs/beads-starter/bd-setup.md` 마커 구간에서 자동 추출되므로, 기본값이
-  아닌 prefix로 설치했더라도 안전합니다. 비대화식입니다.
-- 마커 구간이 없거나(= 미설치) prefix 추출에 실패하면 에러로 종료합니다.
-- 새 주입 대상이 추가된 경우 해당 파일이 새로 생성됩니다.
-- 주입 대상이 제거된 경우(드뭄) 기존 파일은 정리되지 않으므로 해당 경로를
-  수동 삭제하거나 `uninstall` 후 `install`로 리셋하세요.
+- Only the **inside** of marker regions is replaced with the current `main`
+  content. Content outside the markers is preserved.
+- The prefix is auto-extracted from the existing
+  `docs/beads-starter/bd-setup.md` marker region, so installations using a
+  non-default prefix are safe. This command is non-interactive.
+- Exits with an error if no marker region exists (i.e. not installed) or if
+  prefix extraction fails.
+- If new injection targets have been added, the corresponding files are
+  created.
+- If an injection target has been removed (rare), the old file is not cleaned
+  up — delete it manually, or reset via `uninstall` followed by `install`.
 
-## 언인스톨
+## Uninstall
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/beads-starter.sh | bash -s -- uninstall --yes
 ```
 
-대상 레포의 모든 `beads-starter` 마커 구간을 제거합니다. 마커 구간만 들어
-있던 파일은 빈 파일로 남으며, 삭제는 사용자가 수동으로 합니다.
+Removes every `beads-starter` marker region from the target repo. Files that
+contained nothing but a marker region are left empty; remove them manually if
+you want.
 
-`.beads/` 디렉토리, `bd` CLI 바이너리, `~/.beads/shared-server/` 등 bd가
-설치·생성한 아티팩트는 건드리지 않습니다. 실행 후 이들 항목을 직접 정리할
-수 있도록 경로 안내 메시지를 출력합니다.
+It does not touch artifacts that bd itself installed or created — the
+`.beads/` directory, the `bd` CLI binary, `~/.beads/shared-server/`, etc.
+After running, the script prints paths so you can clean those up yourself.
 
-## 커맨드
+## Commands
 
-- `install [--yes|-y]` — 마커 구간을 주입하여 설치. `--yes`는 프롬프트
-  생략.
-- `update` — 기존 prefix를 유지하며 마커 구간 내부를 재주입. 플래그 없음,
-  항상 비대화식.
-- `uninstall [--yes|-y]` — 마커 구간 제거. `--yes`는 확인 프롬프트 생략.
-- `-h`, `--help` — 사용법 출력. `<command> --help`로 서브커맨드별 상세 출력
-  지원.
+- `install [--yes|-y]` — inject marker regions. `--yes` skips prompts.
+- `update` — re-inject the inside of marker regions while preserving the
+  existing prefix. Takes no flags; always non-interactive.
+- `uninstall [--yes|-y]` — remove marker regions. `--yes` skips the
+  confirmation prompt.
+- `-h`, `--help` — print usage. `<command> --help` shows per-subcommand
+  details.
 
-## 동작 모드
+## Operating mode
 
-프리셋은 beads를 **shared-server** 모드(로컬 전용, Dolt 원격 없음)로
-구성합니다. git worktree 작업 흐름과 단일 머신 사용에 맞춘 설정입니다.
-주입된 `docs/beads-starter/bd-setup.md`에 실제 실행할 `bd init` 명령이 그대로 들어갑니다.
+The preset configures beads in **shared-server** mode (local only, no Dolt
+remote). The setup targets git worktree workflows and single-machine use. The
+actual `bd init` command to run ships verbatim in the injected
+`docs/beads-starter/bd-setup.md`.
 
-## 설치 이후
+## After installing
 
-AI 에이전트에게 `docs/beads-starter/bd-setup.md`를 따라 bd를 설치·초기화해 달라고
-요청하세요. bd 설치 여부 확인, `bd init`, 후속 `bd config`까지 모두
-해당 문서에 순서대로 정리되어 있습니다.
+Ask your AI agent to follow `docs/beads-starter/bd-setup.md` to install and
+initialize bd. That document covers the bd install check, `bd init`, and the
+follow-up `bd config` calls in order.
+
+## License
+
+[MIT](LICENSE)
