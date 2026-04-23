@@ -136,8 +136,7 @@ Local-only shared-server (no Dolt remote). Do **not** run `bd dolt pull` /
 
 ### Concurrency
 
-Only **one** issue may be `in_progress` per session. Multiple issues can be
-approved together, but execute them sequentially.
+Only **one** issue may be `in_progress` per session, released on `close`.
 
 ### Commit Rules
 
