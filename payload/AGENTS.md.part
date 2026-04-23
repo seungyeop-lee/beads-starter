@@ -52,8 +52,7 @@ digraph agent_workflow {
    existing one covers the scope).
 2. **Await approval** — do not start until the user approves. Multiple
    pre-registered issues may be approved together.
-3. **In progress** — `bd update <id> --status=in_progress` immediately before
-   touching any file.
+3. **In progress** — transition before touching any file.
 4. **Execute.**
 5. **Report** — summarize changes and request confirmation. If the description
    contains a verification section (e.g., `## Verification`), execute every
@@ -63,22 +62,28 @@ digraph agent_workflow {
    to step 4 (status stays `in_progress`).
 7. **Commit** — stage only files for this issue and commit. Never run
    `git push`.
-8. **Comment** — `bd comments add <id> "<text>"` (positional text, **not**
-   `--message` flag); include the actual commit hash and commit message for the
+8. **Comment** — include the actual commit hash and commit message for the
    commit from step 7.
-9. **Notes** — use `bd update <id> --notes="..."` for durable context not
-   already captured in the diff, commit, or comment. **Required when step 6
-   feedback modified the recorded decision**, using the matching prefix so the
-   two cases stay separable later:
+9. **Notes** — record durable context not already captured in the diff,
+   commit, or comment. **Required when step 6 feedback modified the
+   recorded decision**, using the matching prefix so the two cases stay
+   separable later:
    - `Added via feedback: <item>. Commit: <hash>` — scope was added while
      METHOD itself stayed intact.
    - `Decision changed: <details>. Commit: <hash>` — METHOD itself was revised
      (decision reversal). Also update the issue's `### Alternatives Considered`
      from step 1.
-10. **Close** — `bd close <id> --reason="..."`.
+10. **Close** — close the issue with a reason.
 
 **Session signals:** only `approved` (step 1→3) and `done` (step 6→7) carry
 workflow meaning.
+
+**CLI forms:**
+- create: `bd create ... --silent` (ID only; step 1 and mid-execution discovery)
+- in_progress: `bd update <id> --status=in_progress`
+- comment: `bd comments add <id> "<text>"` (positional text, **not** `--message`)
+- notes: `bd update <id> --notes="..."`
+- close: `bd close <id> --reason="..."`
 
 ### Operating Mode
 
