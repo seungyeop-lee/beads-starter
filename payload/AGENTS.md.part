@@ -62,8 +62,7 @@ digraph agent_workflow {
    to step 4 (status stays `in_progress`).
 7. **Commit** — stage only files for this issue and commit. Never run
    `git push`.
-8. **Comment** — include the actual commit hash and commit message for the
-   commit from step 7.
+8. **Comment** — include the commit hash and subject line.
 9. **Notes** — record durable context not already captured in the diff,
    commit, or comment. **Required when step 6 feedback modified the
    recorded decision**, using the matching prefix so the two cases stay
@@ -84,6 +83,8 @@ workflow meaning.
 - comment: `bd comments add <id> "<text>"` (positional text, **not** `--message`)
 - notes: `bd update <id> --notes="..."`
 - close: `bd close <id> --reason="..."`
+- read comments: `bd comments <id>` (post-step 8; lighter than `bd show`)
+- scan titles: `bd show <id> --short` or `bd ready`
 
 ### Operating Mode
 
