@@ -48,26 +48,37 @@ Then continue working on the current issue.
 (not the other way around). Adding the dependency as `epic → child` causes
 `bd epic status` to return an empty list.
 
+Do not create hierarchy by default. For directly executable work, create a
+single `task`, `bug`, or `chore`. When work needs grouping, prefer
+`epic -> feature -> executable issue`, where executable issue means `task`,
+`bug`, or `chore`.
+
 ```
 # 1. Create the epic
 bd create --title="Epic title" --description="..." --type=epic
 
-# 2. Create child tasks
-bd create --title="Task A" --description="..." --type=task
-bd create --title="Task B" --description="..." --type=task
+# 2. Create features under the epic
+bd create --title="Feature A" --description="..." --type=feature --parent=<epic-id>
+bd create --title="Feature B" --description="..." --type=feature --parent=<epic-id>
 
-# 3. Link: child → epic (parent-child)
-bd dep add <child-id> <epic-id> --type=parent-child
+# 3. Create executable issues under a feature
+bd create --title="Task A" --description="..." --type=task --parent=<feature-id>
+bd create --title="Bug A" --description="..." --type=bug --parent=<feature-id>
+bd create --title="Chore A" --description="..." --type=chore --parent=<feature-id>
 ```
 
-Use `--parent` to link at creation time:
+Use `bd dep add` to link existing issues:
 
 ```
-bd create --title="Task A" --description="..." --type=task --parent=<epic-id>
+bd dep add <feature-id> <epic-id> --type=parent-child
+bd dep add <executable-issue-id> <feature-id> --type=parent-child
 ```
 
-**Direction rule:** `bd dep add A B` means "A depends on B", so for epics `A` is
-the child and `B` is the epic.
+Avoid attaching executable issues directly under an epic unless no meaningful
+feature grouping exists.
+
+**Direction rule:** `bd dep add A B` means "A depends on B", so `A` is the child
+and `B` is the parent.
 
 ## Lifecycle Commands
 

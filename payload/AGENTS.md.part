@@ -79,6 +79,8 @@ workflow meaning.
 
 **CLI forms:**
 - create: `bd create ... --silent` (ID only; step 1 and mid-execution discovery)
+- create under parent: `bd create ... --parent=<parent-id> --silent`
+- link existing child: `bd dep add <child-id> <parent-id> --type=parent-child`
 - in_progress: `bd update <id> --status=in_progress`
 - comment: `bd comments add <id> "<text>"` (positional text, **not** `--message`)
 - notes: `bd update <id> --notes="..."`
@@ -131,6 +133,16 @@ Local-only shared-server (no Dolt remote). Do **not** run `bd dolt pull` /
 - **Issue type** — `bug` (broken behavior) / `feature` (new functionality) /
   `task` (work item: tests, docs, refactor) / `epic` (large feature with
   subtasks) / `chore` (maintenance).
+- **Issue hierarchy** — do not create hierarchy by default. For a directly
+  executable unit of work, create a single `task`, `bug`, or `chore`. Use
+  hierarchy only when the work needs grouping:
+  - `feature` groups multiple executable issues for one independently
+    reviewable capability.
+  - `epic` groups multiple features for one larger initiative.
+  - When hierarchy is used, prefer `epic -> feature -> executable issue`,
+    where executable issue means `task`, `bug`, or `chore`.
+  Avoid attaching executable issues directly under an epic unless no meaningful
+  feature grouping exists.
 - **Priority** — `0` critical / `1` high / `2` medium (default) / `3` low / `4`
   backlog.
 
