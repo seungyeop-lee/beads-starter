@@ -95,12 +95,17 @@ Local-only shared-server (no Dolt remote). Do **not** run `bd dolt pull` /
 
 ### Issue Content
 
+- Initial descriptions should be intentionally lean. Record the minimum
+  self-contained contract needed to start work; do not pre-fill implementation
+  detail, speculative alternatives, or discoveries that have not happened yet.
 - Every description must expose both **WHAT** and **METHOD** under clear
   headings (e.g., `## WHAT`, `## METHOD`).
   - **WHAT** — the target problem/outcome (why this issue exists, what must
     change).
-  - **METHOD** — the agreed approach. Implementation detail belongs in `notes`
-    after the work is done (step 9).
+  - **METHOD** — the currently agreed approach at decision level: chosen
+    direction, known constraints, and scope boundaries that would change
+    execution. Low-level implementation detail belongs in later comments or
+    `notes`, after it becomes true.
 - Add an `### Alternatives Considered` subsection under METHOD **only when**
   one of the following triggers fired:
   - Two or more concrete implementations were actually compared during
@@ -113,18 +118,25 @@ Local-only shared-server (no Dolt remote). Do **not** run `bd dolt pull` /
   rejected by common sense — the absence of the subsection itself signals "no
   alternatives were discussed."
 
-- **Self-contained** — the description must let an executor who has not seen
-  the conversation start work without asking follow-up questions. Record
-  every constraint agreed in discussion (chosen approach, rejected options,
-  scope boundaries) in METHOD. Do not rely on session memory.
+- **Self-contained, not exhaustive** — the description must let an executor
+  who has not seen the conversation start work without asking follow-up
+  questions. Record only constraints that are already agreed and would change
+  execution; do not turn the issue into a transcript or full implementation
+  plan.
 - **Out of Scope** — when the boundary is non-trivial, add an
   `### Out of Scope` subsection under METHOD listing what this issue
   explicitly does not cover (related components deferred, files not to
   touch, features excluded).
 - **Verification required for file-modifying issues** — add a
-  `## Verification` section with concrete, checkable criteria (files that
-  must exist or not exist, behaviors that must hold). Step 5 of the Agent
-  Workflow executes every item, so the section must be unambiguous.
+  `## Verification` section with practical, checkable criteria known at
+  creation time (files that must exist or not exist, behaviors that must hold).
+  Step 5 of the Agent Workflow executes every item, so the section must be
+  unambiguous. Add new verification items later only when execution or feedback
+  makes them necessary.
+- **Progressive updates** — during execution, record meaningful discoveries,
+  decision changes, and scope additions as comments or `notes` when they become
+  true. The description is the starting contract, not the full history of the
+  work.
 - **Pre-creation self-check** — before `bd create`, re-read the description
   and confirm a reader without conversation context could proceed. If any
   agreed constraint is missing, or if unresolved choices would change
