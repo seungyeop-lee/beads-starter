@@ -26,7 +26,7 @@ Add this repository as a Claude Code plugin marketplace, then install the
 
 ```
 /plugin marketplace add seungyeop-lee/beads-starter
-/plugin install beads-starter@seungyeop-lee/beads-starter
+/plugin install beads-starter@beads-starter
 ```
 
 After installation, run `/reload-plugins` to activate the plugin without
