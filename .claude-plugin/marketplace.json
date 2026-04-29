@@ -1,0 +1,18 @@
+{
+  "name": "beads-starter",
+  "metadata": {
+    "description": "Explicit-invocation beads workflow plugin",
+    "version": "0.1.0"
+  },
+  "owner": {
+    "name": "seungyeop-lee",
+    "email": "xbeast7@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "beads-starter",
+      "source": "./on-demand",
+      "description": "Explicit-invocation beads workflow plugin (bds-workflow, bds-setup, bds-status skills)"
+    }
+  ]
+}

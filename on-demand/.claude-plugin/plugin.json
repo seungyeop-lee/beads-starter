@@ -1,0 +1,9 @@
+{
+  "name": "beads-starter",
+  "version": "0.1.0",
+  "description": "Explicit-invocation beads workflow plugin",
+  "author": {
+    "name": "seungyeop-lee",
+    "email": "xbeast7@gmail.com"
+  }
+}
