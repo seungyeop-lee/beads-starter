@@ -42,4 +42,4 @@ Do not call `bd show` for each issue — the user can ask separately if they wan
 
 ## If bd Is Missing
 
-If `bd` is not installed or `.beads/` does not exist, suggest `/bds-setup` and stop.
+If `bd` is not installed or `.beads/` does not exist, suggest the `bds-setup` skill and stop.

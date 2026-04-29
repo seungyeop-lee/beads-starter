@@ -9,7 +9,7 @@ Project-specific beads workflow conventions for any file-modifying task.
 
 ## Initialization
 
-Before any workflow step below, verify `.beads/` exists at the repository root. If it does not, the repo has not been initialized — invoke `/bds-setup` to install bd and run the init flow, then resume.
+Before any workflow step below, verify `.beads/` exists at the repository root. If it does not, the repo has not been initialized — invoke the `bds-setup` skill to install bd and run the init flow, then resume.
 
 ## Agent Workflow
 

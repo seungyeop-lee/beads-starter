@@ -109,5 +109,5 @@ From `bd doctor`:
 
 Tell the user:
 
-- The full workflow is available via `/bds-workflow`.
-- Current queue status via `/bds-status`.
+- The full workflow is available via the `bds-workflow` skill.
+- Current queue status via the `bds-status` skill.

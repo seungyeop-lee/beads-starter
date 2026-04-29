@@ -3,8 +3,8 @@
 *English · [한국어](README.ko.md)*
 
 > Two ways to bring [beads](https://github.com/steveyegge/beads) workflow
-> conventions into a project: an always-on bash installer and an on-demand
-> Claude Code plugin.
+> conventions into a project: an always-on bash installer, and an on-demand
+> skill bundle for Claude Code or Codex CLI.
 >
 > **Unofficial.** Not affiliated with the beads project.
 
@@ -12,11 +12,11 @@
 
 | | Always-on mode | On-demand mode |
 |---|---|---|
-| Mechanism | Bash installer injects content into target repo files | Claude Code plugin loaded via slash commands |
-| When the workflow applies | Every session, automatically | Only when you explicitly invoke `/bds-workflow` |
-| Distribution | `curl | bash` | Claude Code plugin marketplace |
-| Agent compatibility | Any agent that reads `AGENTS.md` (Claude Code, Cursor, Codex, …) | Claude Code only |
-| Pick this if | You want the workflow to apply to every task without thinking about it, or you use multiple AI agents | You use Claude Code only and want to opt in per task |
+| Mechanism | Bash installer injects content into target repo files | Three skills loaded only on explicit invocation |
+| When the workflow applies | Every session, automatically | Only when you explicitly invoke the `bds-workflow` skill |
+| Distribution | `curl | bash` | Claude Code plugin marketplace, or `curl | bash` (Codex) |
+| Agent compatibility | Any agent that reads `AGENTS.md` (Claude Code, Cursor, Codex, …) | Claude Code, Codex CLI |
+| Pick this if | You want the workflow to apply to every task without thinking about it, or you use multiple AI agents | You want to opt in per task |
 
 The two modes are mutually exclusive — pick one. If both are installed in the
 same repo, the workflow rules will be loaded twice.
@@ -115,58 +115,96 @@ Update any pinned references at your convenience.
 
 ---
 
-## On-demand mode (Claude Code plugin)
+## On-demand mode (Claude Code or Codex)
 
-A Claude Code plugin that exposes beads workflow conventions as three skills,
-loaded only when you explicitly invoke them. The repo's working files are not
-modified; everything lives in the plugin install.
+Three skills that expose beads workflow conventions, loaded only when you
+explicitly invoke them. The repo's working files are not modified; everything
+lives where the host tool stores skills.
 
 ### Skills
 
-- `/bds-workflow` — load the 10-step workflow rules (register → close), with
+- `bds-workflow` — load the 10-step workflow rules (register → close), with
   on-demand references to issue-content rules, shell-safety, commit rules, and
   command examples.
-- `/bds-setup` — install bd if missing and initialize the project (`bd init`
+- `bds-setup` — install bd if missing and initialize the project (`bd init`
   with this preset's flags). Hybrid flow: prints each command and asks before
   running.
-- `/bds-status` — summarize ready issues and current in-progress state.
+- `bds-status` — summarize ready issues and current in-progress state.
 
-All three skills only run when you invoke them by slash command. None
-auto-activate based on session content.
+All three only run when you invoke them explicitly. None auto-activate based
+on session content.
 
-### Install
+### Claude Code
 
 Add this repository as a Claude Code plugin marketplace, then install the
 `beads-starter` plugin from it. (Refer to your Claude Code version's docs for
 the exact marketplace add/install flow.)
 
+Invoke with slash commands: `/bds-workflow`, `/bds-setup`, `/bds-status`.
+
+### Codex CLI
+
+A bash installer copies the three skills into Codex's skill directory. No
+Codex plugin manifest is required — Codex auto-discovers `SKILL.md` files in
+its skill directories.
+
+#### Install
+
+```bash
+curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- install
+```
+
+Interactive mode prompts for the scope:
+
+- `user` — `~/.codex/skills/bds-*/` (machine-wide; honors `$CODEX_HOME` if set)
+- `project` — `<cwd>/.agents/skills/bds-*/` (current repo only; check it into
+  version control to share with collaborators)
+
+Non-interactive variants:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- install --scope=user --yes
+curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- install --scope=project --yes
+```
+
+If Codex CLI is currently running, restart it so the new skills are picked
+up. Invoke from inside Codex via `/skills` or by mentioning `$bds-workflow`;
+see the [Codex skills docs](https://developers.openai.com/codex/skills) for
+the exact UI.
+
+#### Update
+
+```bash
+curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- update --scope=user --yes
+```
+
+Replaces the three skill directories with the latest content. Errors out if
+no beads-starter skill is found in the chosen scope.
+
+#### Uninstall
+
+```bash
+curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- uninstall --scope=user --yes
+```
+
+Removes only `bds-workflow/`, `bds-setup/`, `bds-status/` from the chosen
+scope. Other skills under the same parent directory are untouched.
+
 ### Initialize a repository
 
-In a repo that hasn't used bd yet:
+In a repo that hasn't used bd yet, invoke the `bds-setup` skill:
 
-```
-/bds-setup
-```
+- Claude Code: `/bds-setup`
+- Codex CLI: `/skills` and pick `bds-setup`, or mention `$bds-setup`
 
-Walks you through bd install (if missing), prefix selection, and the four
+It walks you through bd install (if missing), prefix selection, and the four
 init/config commands.
 
 ### Use the workflow
 
-At the start of a beads-related task in a Claude Code session:
-
-```
-/bds-workflow
-```
-
-Loads the 10-step workflow rules. Stays in context for the rest of the
-session.
-
-To check queue state at any time:
-
-```
-/bds-status
-```
+At the start of a beads-related task, invoke the `bds-workflow` skill. It
+loads the 10-step workflow rules and stays in context for the rest of the
+session. Check queue state any time with `bds-status`.
 
 ### Switching from always-on mode
 

@@ -8,9 +8,14 @@
 - **항시 발동 모드**(bash 설치형) — 대상 레포의 `AGENTS.md` 등에 콘텐츠를
   주입해 매 세션 자동 적용. 진입점은 `always-on/beads-starter.sh`이며 루트
   `beads-starter.sh`는 URL 안정성을 위한 thin shim입니다.
-- **명시적 발동 모드**(Claude Code 플러그인) — `on-demand/` 하위 플러그인을
-  사용자가 슬래시 커맨드(`/bds-workflow`, `/bds-setup`, `/bds-status`)로
-  명시적으로 호출했을 때만 발동.
+- **명시적 발동 모드**(Claude Code 플러그인 또는 Codex skill) — `on-demand/`
+  하위 콘텐츠를 사용자가 명시적으로 호출했을 때만 발동. 단일 소스
+  `on-demand/skills/`를 두 도구가 공유합니다:
+  - Claude Code: `on-demand/.claude-plugin/plugin.json`을 통해 marketplace로
+    배포, 슬래시 커맨드(`/bds-workflow`, `/bds-setup`, `/bds-status`).
+  - Codex CLI: `on-demand/codex-installer.sh`(bash, `curl | bash` 호환)가
+    `~/.codex/skills/` 또는 `<repo>/.agents/skills/`로 복사. Codex가 자동
+    디스커버리 후 `/skills` UI나 `$<name>` 멘션으로 호출.
 
 이 레포 자체는 beads 워크플로우를 사용하지 않습니다. `.beads/` 초기화,
 beads 이슈 등록, `bd` 상태 전환은 적용 대상 레포에 들어가는 운영 규칙이지
@@ -30,8 +35,9 @@ beads-starter/
 │           ├── bd-setup.md.part
 │           └── beads-commands.md.part
 ├── on-demand/                               # 명시적 발동 모드
-│   ├── .claude-plugin/plugin.json
-│   └── skills/
+│   ├── .claude-plugin/plugin.json           # Claude Code 플러그인 메타
+│   ├── codex-installer.sh                   # Codex 배포용 bash 설치 스크립트
+│   └── skills/                              # 두 도구가 공유하는 단일 소스
 │       ├── bds-workflow/                    # 10단계 워크플로우 + 보조 파일
 │       │   ├── SKILL.md
 │       │   ├── issue-content.md
@@ -157,17 +163,53 @@ description: <간단한 영문 설명>. Runs only on explicit invocation.
 SKILL.md 본문, 보조 파일, description, skill이 사용자에게 출력하는 메시지
 모두 **영문**입니다. `always-on/payload/`와 의도적으로 일치시킵니다.
 
-### 슬래시 커맨드와 skill 이름
+### Skill 이름과 호출 표기
 
-`/<skill-name>` 형태로 1:1 매칭됩니다. skill 이름을 변경하면 슬래시 커맨드도
-같이 변경되며, README와 다른 skill에서의 cross-reference(예: `bds-setup`
-SKILL.md가 `/bds-workflow` 안내)도 동시에 갱신해야 합니다.
+Claude Code는 `/<skill-name>` 형태로 1:1 매칭되고, Codex는 `/skills` UI 또는
+`$<name>` 멘션으로 호출합니다. SKILL.md 본문에서 다른 skill을 참조할 때는
+**도구 중립 표현**(`the \`bds-setup\` skill`)을 사용하십시오 — 특정 도구의
+호출 문법(`/bds-setup`, `$bds-setup`)을 본문에 박아 두면 다른 도구에서
+어색해집니다. skill 이름을 변경하면 (a) Claude Code 슬래시 커맨드, (b)
+README의 도구별 호출 안내, (c) 다른 skill의 cross-reference(예: `bds-setup`
+SKILL.md가 `bds-workflow` 안내)를 모두 동시에 갱신해야 합니다.
 
-### 플러그인 등록
+예외: 본문이 `bd` 도구 자체의 출력 메시지를 인용하는 경우(예:
+`bds-setup/SKILL.md`의 "Claude Plugin: ..." 경고 항목)는 인용 원문이므로
+변경하지 마십시오 — 문자열 그대로여야 사용자가 출력과 매칭할 수 있습니다.
+
+### Claude Code 플러그인 등록
 
 루트 `.claude-plugin/marketplace.json`에서 `on-demand/`를 source로
 가리킵니다. 플러그인 메타데이터는 `on-demand/.claude-plugin/plugin.json`에
 별도로 존재하며, 두 파일의 `name`/`description`은 일치시키는 것이 좋습니다.
+
+### `on-demand/codex-installer.sh`
+
+Codex CLI에 `on-demand/skills/`의 세 skill을 복사하는 bash 설치
+스크립트입니다.
+
+- **단일 소스 활용** — Claude Code 플러그인이 참조하는 동일한
+  `on-demand/skills/` 디렉터리를 그대로 fetch합니다. 도구별 콘텐츠 분기·치환
+  레이어 없음. SKILL.md를 도구 중립 표현으로 유지하기 때문에 가능한 구조.
+- **멱등성** — 마커 기반이 아닌 **skill 디렉터리 단위 통째 교체**.
+  `install`/`update`는 대상 디렉터리(`bds-workflow/`, `bds-setup/`,
+  `bds-status/`)를 `rm -rf` 후 재생성하므로 보조 파일이 제거된 경우에도
+  자연스럽게 정리됩니다. 같은 부모 디렉터리의 다른 skill은 절대 건드리지
+  않습니다.
+- **필수 가정** — 사용자가 `bds-workflow`/`bds-setup`/`bds-status`라는 같은
+  이름의 다른 skill을 별도로 가지고 있지 않다는 전제. 이 가정이 깨지면
+  uninstall이 사용자 콘텐츠를 지웁니다.
+- **`always-on/`과 동일한 플랫폼 규칙 적용**:
+  - `curl | bash` 경로에서 stdin으로 파이프됨 — `$0` / 디스크 스크립트 경로
+    의존 금지.
+  - 대화식 입출력은 `/dev/tty` 명시 리디렉션.
+  - bash + curl + POSIX 유틸리티 외 의존성 금지.
+- **스코프 인자 계약** — `--scope=user|project`. `--yes`와 함께 쓸 때는
+  필수, 단독 실행 시 인터랙티브로 묻습니다. user 스코프는 `$CODEX_HOME`을
+  존중하며 기본은 `$HOME/.codex/skills`. project 스코프는 `$PWD/.agents/skills`.
+- **PAYLOAD_BASE 오버라이드** — `always-on/beads-starter.sh`와 동일한 관례.
+  로컬 테스트 시 `file://${REPO_ROOT}/on-demand/skills`를 가리키도록 설정
+  가능.
 
 ## 모드 간 공통 콘텐츠 유지보수
 
@@ -243,7 +285,7 @@ bash -n always-on/beads-starter.sh
 
 ### 명시적 발동 모드
 
-플러그인을 marketplace에 정식 설치하기 전이라도 로컬에서 검증 가능:
+콘텐츠 자체 검증:
 
 - JSON 유효성:
 
@@ -257,8 +299,45 @@ bash -n always-on/beads-starter.sh
 - 보조 파일 참조: SKILL.md가 링크하는 보조 파일 경로(`issue-content.md` 등)가
   실제로 존재하는지 확인.
 
-설치 후 동작은 Claude Code에서 marketplace를 추가하고 플러그인을 설치한 뒤
-`/bds-workflow`, `/bds-setup`, `/bds-status` 호출로 검증합니다.
+Claude Code 플러그인의 설치 후 동작은 marketplace를 추가하고 플러그인을
+설치한 뒤 `/bds-workflow`, `/bds-setup`, `/bds-status` 호출로 검증합니다.
+
+**Codex installer (`on-demand/codex-installer.sh`)**
+
+구문 검증:
+
+```
+bash -n on-demand/codex-installer.sh
+```
+
+스크래치 디렉토리에서 로컬 fetch로 시나리오 검증:
+
+```
+REPO_ROOT="<absolute path to this repo>"
+mkdir -p /tmp/beads-starter-test/codex-myproj
+cd /tmp/beads-starter-test/codex-myproj
+
+# project 스코프
+PAYLOAD_BASE="file://${REPO_ROOT}/on-demand/skills" bash "${REPO_ROOT}/on-demand/codex-installer.sh" install --scope=project --yes
+PAYLOAD_BASE="file://${REPO_ROOT}/on-demand/skills" bash "${REPO_ROOT}/on-demand/codex-installer.sh" update --scope=project --yes
+PAYLOAD_BASE="file://${REPO_ROOT}/on-demand/skills" bash "${REPO_ROOT}/on-demand/codex-installer.sh" uninstall --scope=project --yes
+
+# user 스코프 (격리된 CODEX_HOME으로 실제 ~/.codex 오염 방지)
+CODEX_HOME=/tmp/beads-starter-test/fake-codex \
+  PAYLOAD_BASE="file://${REPO_ROOT}/on-demand/skills" \
+  bash "${REPO_ROOT}/on-demand/codex-installer.sh" install --scope=user --yes
+```
+
+`on-demand/codex-installer.sh` 변경 시 반드시 커버해야 할 시나리오:
+
+1. 최초 `install` (빈 대상) — `bds-workflow/`, `bds-setup/`, `bds-status/`
+   세 디렉토리가 생성되고 각 SKILL.md와 보조 파일이 모두 존재.
+2. `install` 재실행 — 세 디렉토리가 통째 교체되며 stale 파일 잔존 없음.
+   같은 부모 디렉토리의 다른 항목은 무영향.
+3. `update` — 미설치 상태에서는 에러, 설치 상태에서는 install 동등 동작.
+4. `uninstall` — 세 디렉토리만 제거, 다른 항목 보존.
+5. `--scope` 누락 + `--yes` — 에러로 종료.
+6. 알 수 없는 서브커맨드 / 옵션 — usage 출력 후 비영 종료.
 
 ## 릴리스 플로우
 
@@ -280,7 +359,20 @@ bash -n always-on/beads-starter.sh
 
 ### 명시적 발동 모드
 
+배포 채널은 두 가지이며, `on-demand/skills/`를 단일 소스로 공유합니다.
+
+**Claude Code (플러그인 marketplace)**
+
 루트 `.claude-plugin/marketplace.json`이 self-marketplace 진입점입니다.
 사용자는 이 레포를 Claude Code 플러그인 marketplace로 추가하고 그 안의
 `beads-starter` 플러그인을 설치합니다. 명시적 릴리스 시
 `on-demand/.claude-plugin/plugin.json`의 `version` 필드를 갱신하십시오.
+
+**Codex CLI (`curl | bash`)**
+
+- **정본**: `https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh`
+  — README가 안내하는 URL.
+
+`codex-installer.sh`가 `on-demand/skills/`의 콘텐츠를 같은 `main` 기준으로
+가져오기 때문에, `main`에 올라가는 모든 커밋은 스크립트와
+`on-demand/skills/`가 일관된 상태여야 합니다.
