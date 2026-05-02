@@ -9,7 +9,7 @@ Project-specific beads workflow conventions for any file-modifying task.
 
 ## Initialization
 
-Before any workflow step below, verify `bd where` succeeds. If it fails, the repo has not been initialized — invoke the `bds-setup` skill to install bd and run the init flow, then resume.
+Before any workflow step below, verify `bd where` succeeds. If `bd` is not installed or `bd where` fails (the repo has not been initialized for bd), invoke the `bds-setup` skill to install bd and run the init flow, then resume.
 
 ## Agent Workflow
 
