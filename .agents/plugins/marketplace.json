@@ -1,0 +1,20 @@
+{
+  "name": "beads-starter",
+  "interface": {
+    "displayName": "beads-starter"
+  },
+  "plugins": [
+    {
+      "name": "beads-starter",
+      "source": {
+        "source": "local",
+        "path": "./on-demand"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -4,7 +4,7 @@
 
 beads 워크플로우 규약을 세 개의 skill로 노출합니다. 사용자가 명시적으로
 호출했을 때만 로드됩니다. 레포의 작업 파일은 수정하지 않으며, 모든 콘텐츠는
-호스트 도구가 skill을 보관하는 위치에 존재합니다.
+호스트 도구가 플러그인 skill을 보관하는 위치에 존재합니다.
 
 ## Skills
 
@@ -33,60 +33,65 @@ beads 워크플로우 규약을 세 개의 skill로 노출합니다. 사용자�
 
 슬래시 커맨드로 호출: `/bds-workflow`, `/bds-setup`, `/bds-status`.
 
-## Codex CLI
+## Codex
 
-세 skill을 Codex의 skill 디렉터리로 복사하는 bash 설치 스크립트입니다. 별도
-Codex 플러그인 매니페스트는 필요 없습니다 — Codex가 skill 디렉터리의
-`SKILL.md`를 자동 디스커버리합니다.
+이 레포를 Codex 플러그인 marketplace로 추가한 뒤, Codex 플러그인 디렉터리에서
+`beads-starter` 플러그인을 설치합니다.
 
 ### 설치
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- install
+codex plugin marketplace add seungyeop-lee/beads-starter
 ```
 
-대화식 모드에서 스코프(`user` 또는 `project`)를 묻습니다.
+marketplace 추가 후 Codex에서 `/plugins`를 실행합니다. `beads-starter`
+marketplace를 선택하고, `beads-starter` 플러그인을 열어 설치합니다.
 
-- `user` — `~/.codex/skills/bds-*/` (머신 전체. `$CODEX_HOME`이 설정돼 있으면
-  그 경로를 따름)
-- `project` — `<cwd>/.agents/skills/bds-*/` (현재 레포 한정. 협업자와
-  공유하려면 디렉터리를 버전 관리에 포함)
-
-비대화식:
-
-```bash
-curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- install --scope=user --yes
-curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- install --scope=project --yes
-```
-
-Codex CLI가 실행 중이라면 새 skill을 인식하도록 재시작하세요. Codex 안에서
-호출은 `/skills` UI 또는 `$bds-workflow` 멘션으로 합니다. 정확한 UI는
+Codex 안에서 호출은 `/skills` UI 또는 `$bds-workflow` 멘션으로 합니다.
+정확한 UI는 [Codex 플러그인 문서](https://developers.openai.com/codex/plugins)와
 [Codex skills 문서](https://developers.openai.com/codex/skills)를 참고하세요.
 
 ### 업데이트
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- update --scope=user --yes
+codex plugin marketplace upgrade beads-starter
 ```
 
-세 skill 디렉터리를 최신 콘텐츠로 교체합니다. 선택한 스코프에 beads-starter
-skill이 없으면 에러로 종료합니다.
+이후 `/plugins`를 열고 Codex가 새 버전을 표시하면 업데이트하거나 다시
+설치합니다.
 
 ### 언인스톨
+
+Codex에서 `/plugins`를 사용해 `beads-starter` 플러그인을 언인스톨합니다.
+
+### Legacy direct-skill cleanup
+
+이 프로젝트의 예전 버전은 bash installer로 `bds-workflow/`, `bds-setup/`,
+`bds-status/`를 Codex skill 디렉터리에 직접 복사했습니다. 새 설치는 위의
+플러그인 경로를 사용하세요. 아래 cleanup 스크립트는 예전 direct-skill
+복사본을 제거할 때만 사용합니다:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- uninstall --scope=user --yes
 ```
 
-선택한 스코프에서 `bds-workflow/`, `bds-setup/`, `bds-status/` 디렉터리만
-제거합니다. 같은 부모 디렉터리의 다른 skill은 건드리지 않습니다.
+스코프:
+
+- `user` — `~/.codex/skills/bds-*/` (머신 전체. `$CODEX_HOME`이 설정돼 있으면
+  그 경로를 따름)
+- `project` — `<cwd>/.agents/skills/bds-*/` (현재 레포 한정)
+
+cleanup 스크립트는 선택한 스코프에서 `bds-workflow/`, `bds-setup/`,
+`bds-status/` 디렉터리만 제거합니다. 같은 부모 디렉터리의 다른 skill은
+건드리지 않습니다. 예전 `install`과 `update` 명령은 이제 Codex 플러그인
+설치 안내를 출력하고 종료합니다.
 
 ## 레포 초기화
 
 bd를 한 번도 쓰지 않은 레포에서 `bds-setup` skill을 호출:
 
 - Claude Code: `/bds-setup`
-- Codex CLI: `/skills`에서 `bds-setup` 선택, 또는 `$bds-setup` 멘션
+- Codex: `/skills`에서 `bds-setup` 선택, 또는 `$bds-setup` 멘션
 
 bd 설치(없으면), prefix 선택, init/config 네 개 명령을 안내합니다.
 

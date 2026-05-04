@@ -4,7 +4,7 @@
 
 > Two ways to bring [beads](https://github.com/steveyegge/beads) workflow
 > conventions into a project: an always-on bash installer, and an on-demand
-> skill bundle for Claude Code or Codex CLI.
+> plugin-backed skill bundle for Claude Code or Codex.
 >
 > **Unofficial.** Not affiliated with the beads project.
 
@@ -14,8 +14,8 @@
 |---|---|---|
 | Mechanism | Bash installer injects content into target repo files | Three skills loaded only on explicit invocation |
 | When the workflow applies | Every session, automatically | Only when you explicitly invoke the `bds-workflow` skill |
-| Distribution | `curl | bash` | Claude Code plugin marketplace, or `curl | bash` (Codex) |
-| Agent compatibility | Any agent that reads `AGENTS.md` (Claude Code, Cursor, Codex, …) | Claude Code, Codex CLI |
+| Distribution | `curl | bash` | Claude Code and Codex plugin marketplaces |
+| Agent compatibility | Any agent that reads `AGENTS.md` (Claude Code, Cursor, Codex, …) | Claude Code, Codex |
 | Pick this if | You want the workflow to apply to every task without thinking about it, or you use multiple AI agents | You want to opt in per task |
 
 The two modes are mutually exclusive — pick one. If both are installed in the

@@ -8,14 +8,16 @@
 - **항시 발동 모드**(bash 설치형) — 대상 레포의 `AGENTS.md` 등에 콘텐츠를
   주입해 매 세션 자동 적용. 진입점은 `always-on/beads-starter.sh`이며 루트
   `beads-starter.sh`는 URL 안정성을 위한 thin shim입니다.
-- **명시적 발동 모드**(Claude Code 플러그인 또는 Codex skill) — `on-demand/`
+- **명시적 발동 모드**(Claude Code 또는 Codex 플러그인) — `on-demand/`
   하위 콘텐츠를 사용자가 명시적으로 호출했을 때만 발동. 단일 소스
   `on-demand/skills/`를 두 도구가 공유합니다:
   - Claude Code: `on-demand/.claude-plugin/plugin.json`을 통해 marketplace로
     배포, 슬래시 커맨드(`/bds-workflow`, `/bds-setup`, `/bds-status`).
-  - Codex CLI: `on-demand/codex-installer.sh`(bash, `curl | bash` 호환)가
-    `~/.codex/skills/` 또는 `<repo>/.agents/skills/`로 복사. Codex가 자동
-    디스커버리 후 `/skills` UI나 `$<name>` 멘션으로 호출.
+  - Codex: `.agents/plugins/marketplace.json`에서 `on-demand/`를 플러그인
+    source로 가리키고, `on-demand/.codex-plugin/plugin.json`이 같은
+    `on-demand/skills/`를 참조합니다. 호출은 `/skills` UI나 `$<name>` 멘션.
+    `on-demand/codex-installer.sh`는 예전 direct-skill 설치본 제거용
+    legacy cleanup 스크립트입니다.
 
 이 레포 자체는 beads 워크플로우를 사용하지 않습니다. `.beads/` 초기화,
 beads 이슈 등록, `bd` 상태 전환은 적용 대상 레포에 들어가는 운영 규칙이지
@@ -25,6 +27,7 @@ beads 이슈 등록, `bd` 상태 전환은 적용 대상 레포에 들어가는 
 
 ```
 beads-starter/
+├── .agents/plugins/marketplace.json         # Codex self-marketplace 진입점
 ├── beads-starter.sh                         # 루트 shim — URL 안정성용 thin wrapper
 ├── always-on/                               # 항시 발동 모드
 │   ├── beads-starter.sh                     # 정본 bash 진입점
@@ -42,7 +45,8 @@ beads-starter/
 │           └── issue-content-epic.md.part
 ├── on-demand/                               # 명시적 발동 모드
 │   ├── .claude-plugin/plugin.json           # Claude Code 플러그인 메타
-│   ├── codex-installer.sh                   # Codex 배포용 bash 설치 스크립트
+│   ├── .codex-plugin/plugin.json            # Codex 플러그인 메타
+│   ├── codex-installer.sh                   # Codex legacy direct-skill cleanup
 │   └── skills/                              # 두 도구가 공유하는 단일 소스
 │       ├── bds-workflow/                    # 10단계 워크플로우 + 보조 파일
 │       │   ├── SKILL.md
@@ -194,19 +198,26 @@ SKILL.md가 `bds-workflow` 안내)를 모두 동시에 갱신해야 합니다.
 가리킵니다. 플러그인 메타데이터는 `on-demand/.claude-plugin/plugin.json`에
 별도로 존재하며, 두 파일의 `name`/`description`은 일치시키는 것이 좋습니다.
 
+### Codex 플러그인 등록
+
+루트 `.agents/plugins/marketplace.json`에서 `on-demand/`를 source로
+가리킵니다. 플러그인 메타데이터는 `on-demand/.codex-plugin/plugin.json`에
+있으며, `skills` 필드는 `./skills/`를 참조해야 합니다. category는
+`Productivity`, policy는 `installation: AVAILABLE` 및
+`authentication: ON_INSTALL`을 기본값으로 유지합니다.
+
 ### `on-demand/codex-installer.sh`
 
-Codex CLI에 `on-demand/skills/`의 세 skill을 복사하는 bash 설치
-스크립트입니다.
+Codex 플러그인 도입 전 direct-skill 방식으로 복사된 세 skill을 제거하는
+legacy cleanup 스크립트입니다. 파일명은 과거에 공유된 raw URL 안정성을 위해
+유지합니다.
 
-- **단일 소스 활용** — Claude Code 플러그인이 참조하는 동일한
-  `on-demand/skills/` 디렉터리를 그대로 fetch합니다. 도구별 콘텐츠 분기·치환
-  레이어 없음. SKILL.md를 도구 중립 표현으로 유지하기 때문에 가능한 구조.
-- **멱등성** — 마커 기반이 아닌 **skill 디렉터리 단위 통째 교체**.
-  `install`/`update`는 대상 디렉터리(`bds-workflow/`, `bds-setup/`,
-  `bds-status/`)를 `rm -rf` 후 재생성하므로 보조 파일이 제거된 경우에도
-  자연스럽게 정리됩니다. 같은 부모 디렉터리의 다른 skill은 절대 건드리지
-  않습니다.
+- **설치/업데이트 금지** — 새 설치와 업데이트는 Codex 플러그인 marketplace가
+  정식 경로입니다. `install`/`update` 입력은 플러그인 설치 안내를 출력하고
+  실패해야 합니다.
+- **cleanup 범위** — `uninstall`은 선택한 스코프의 `bds-workflow/`,
+  `bds-setup/`, `bds-status/` 디렉터리만 제거합니다. 같은 부모 디렉터리의
+  다른 skill은 절대 건드리지 않습니다.
 - **필수 가정** — 사용자가 `bds-workflow`/`bds-setup`/`bds-status`라는 같은
   이름의 다른 skill을 별도로 가지고 있지 않다는 전제. 이 가정이 깨지면
   uninstall이 사용자 콘텐츠를 지웁니다.
@@ -218,9 +229,6 @@ Codex CLI에 `on-demand/skills/`의 세 skill을 복사하는 bash 설치
 - **스코프 인자 계약** — `--scope=user|project`. `--yes`와 함께 쓸 때는
   필수, 단독 실행 시 인터랙티브로 묻습니다. user 스코프는 `$CODEX_HOME`을
   존중하며 기본은 `$HOME/.codex/skills`. project 스코프는 `$PWD/.agents/skills`.
-- **PAYLOAD_BASE 오버라이드** — `always-on/beads-starter.sh`와 동일한 관례.
-  로컬 테스트 시 `file://${REPO_ROOT}/on-demand/skills`를 가리키도록 설정
-  가능.
 
 ## 모드 간 공통 콘텐츠 유지보수
 
@@ -316,8 +324,10 @@ bash -n always-on/beads-starter.sh
 - JSON 유효성:
 
   ```
+  python3 -c "import json; json.load(open('.agents/plugins/marketplace.json'))"
   python3 -c "import json; json.load(open('.claude-plugin/marketplace.json'))"
   python3 -c "import json; json.load(open('on-demand/.claude-plugin/plugin.json'))"
+  python3 -c "import json; json.load(open('on-demand/.codex-plugin/plugin.json'))"
   ```
 
 - Skill frontmatter 형식: 각 `SKILL.md` 첫 블록이 `---`로 감싼 YAML이며
@@ -328,7 +338,11 @@ bash -n always-on/beads-starter.sh
 Claude Code 플러그인의 설치 후 동작은 marketplace를 추가하고 플러그인을
 설치한 뒤 `/bds-workflow`, `/bds-setup`, `/bds-status` 호출로 검증합니다.
 
-**Codex installer (`on-demand/codex-installer.sh`)**
+Codex 플러그인의 설치 후 동작은 marketplace를 추가하고 `/plugins`에서
+플러그인을 설치한 뒤 `/skills` 또는 `$bds-workflow`, `$bds-setup`,
+`$bds-status` 멘션으로 검증합니다.
+
+**Codex legacy cleanup (`on-demand/codex-installer.sh`)**
 
 구문 검증:
 
@@ -336,34 +350,28 @@ Claude Code 플러그인의 설치 후 동작은 marketplace를 추가하고 플
 bash -n on-demand/codex-installer.sh
 ```
 
-스크래치 디렉토리에서 로컬 fetch로 시나리오 검증:
+스크래치 디렉토리에서 direct-skill legacy cleanup 시나리오 검증:
 
 ```
 REPO_ROOT="<absolute path to this repo>"
 mkdir -p /tmp/beads-starter-test/codex-myproj
 cd /tmp/beads-starter-test/codex-myproj
 
-# project 스코프
-PAYLOAD_BASE="file://${REPO_ROOT}/on-demand/skills" bash "${REPO_ROOT}/on-demand/codex-installer.sh" install --scope=project --yes
-PAYLOAD_BASE="file://${REPO_ROOT}/on-demand/skills" bash "${REPO_ROOT}/on-demand/codex-installer.sh" update --scope=project --yes
-PAYLOAD_BASE="file://${REPO_ROOT}/on-demand/skills" bash "${REPO_ROOT}/on-demand/codex-installer.sh" uninstall --scope=project --yes
+mkdir -p .agents/skills/bds-workflow .agents/skills/bds-setup .agents/skills/bds-status .agents/skills/other
+bash "${REPO_ROOT}/on-demand/codex-installer.sh" uninstall --scope=project --yes
 
-# user 스코프 (격리된 CODEX_HOME으로 실제 ~/.codex 오염 방지)
-CODEX_HOME=/tmp/beads-starter-test/fake-codex \
-  PAYLOAD_BASE="file://${REPO_ROOT}/on-demand/skills" \
-  bash "${REPO_ROOT}/on-demand/codex-installer.sh" install --scope=user --yes
+CODEX_HOME=/tmp/beads-starter-test/fake-codex
+mkdir -p "$CODEX_HOME/skills/bds-workflow" "$CODEX_HOME/skills/bds-setup" "$CODEX_HOME/skills/bds-status" "$CODEX_HOME/skills/other"
+CODEX_HOME="$CODEX_HOME" bash "${REPO_ROOT}/on-demand/codex-installer.sh" uninstall --scope=user --yes
 ```
 
 `on-demand/codex-installer.sh` 변경 시 반드시 커버해야 할 시나리오:
 
-1. 최초 `install` (빈 대상) — `bds-workflow/`, `bds-setup/`, `bds-status/`
-   세 디렉토리가 생성되고 각 SKILL.md와 보조 파일이 모두 존재.
-2. `install` 재실행 — 세 디렉토리가 통째 교체되며 stale 파일 잔존 없음.
-   같은 부모 디렉토리의 다른 항목은 무영향.
-3. `update` — 미설치 상태에서는 에러, 설치 상태에서는 install 동등 동작.
-4. `uninstall` — 세 디렉토리만 제거, 다른 항목 보존.
-5. `--scope` 누락 + `--yes` — 에러로 종료.
-6. 알 수 없는 서브커맨드 / 옵션 — usage 출력 후 비영 종료.
+1. `install` / `update` — Codex 플러그인 설치 안내를 출력하고 비영 종료.
+2. `uninstall` — 세 디렉토리만 제거, 다른 항목 보존.
+3. `uninstall` 미설치 상태 — "nothing to do" 출력 후 성공 종료.
+4. `--scope` 누락 + `--yes` — 에러로 종료.
+5. 알 수 없는 서브커맨드 / 옵션 — usage 출력 후 비영 종료.
 
 ## 릴리스 플로우
 
@@ -385,7 +393,8 @@ CODEX_HOME=/tmp/beads-starter-test/fake-codex \
 
 ### 명시적 발동 모드
 
-배포 채널은 두 가지이며, `on-demand/skills/`를 단일 소스로 공유합니다.
+배포 채널은 Claude Code와 Codex 플러그인이며, `on-demand/skills/`를 단일
+소스로 공유합니다.
 
 **Claude Code (플러그인 marketplace)**
 
@@ -394,11 +403,15 @@ CODEX_HOME=/tmp/beads-starter-test/fake-codex \
 `beads-starter` 플러그인을 설치합니다. 명시적 릴리스 시
 `on-demand/.claude-plugin/plugin.json`의 `version` 필드를 갱신하십시오.
 
-**Codex CLI (`curl | bash`)**
+**Codex (플러그인 marketplace)**
 
-- **정본**: `https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh`
-  — README가 안내하는 URL.
+루트 `.agents/plugins/marketplace.json`이 self-marketplace 진입점입니다.
+사용자는 이 레포를 Codex 플러그인 marketplace로 추가하고 그 안의
+`beads-starter` 플러그인을 설치합니다. 명시적 릴리스 시
+`on-demand/.codex-plugin/plugin.json`의 `version` 필드를 갱신하십시오.
 
-`codex-installer.sh`가 `on-demand/skills/`의 콘텐츠를 같은 `main` 기준으로
-가져오기 때문에, `main`에 올라가는 모든 커밋은 스크립트와
-`on-demand/skills/`가 일관된 상태여야 합니다.
+**Codex legacy direct-skill cleanup**
+
+- **호환 URL**: `https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh`
+  — 예전 direct-skill 설치본 제거용. 새 설치 경로로 안내하고, uninstall만
+  수행해야 합니다.

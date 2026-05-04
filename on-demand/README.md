@@ -4,7 +4,7 @@
 
 Three skills that expose beads workflow conventions, loaded only when you
 explicitly invoke them. The repo's working files are not modified; everything
-lives where the host tool stores skills.
+lives where the host tool stores plugin skills.
 
 ## Skills
 
@@ -35,60 +35,65 @@ or Local) interactively.
 
 Invoke with slash commands: `/bds-workflow`, `/bds-setup`, `/bds-status`.
 
-## Codex CLI
+## Codex
 
-A bash installer copies the three skills into Codex's skill directory. No
-Codex plugin manifest is required — Codex auto-discovers `SKILL.md` files in
-its skill directories.
+Add this repository as a Codex plugin marketplace, then install the
+`beads-starter` plugin from Codex's plugin directory.
 
 ### Install
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- install
+codex plugin marketplace add seungyeop-lee/beads-starter
 ```
 
-Interactive mode prompts for the scope:
+After adding the marketplace, open Codex and run `/plugins`. Choose the
+`beads-starter` marketplace, open the `beads-starter` plugin, and install it.
 
-- `user` — `~/.codex/skills/bds-*/` (machine-wide; honors `$CODEX_HOME` if set)
-- `project` — `<cwd>/.agents/skills/bds-*/` (current repo only; check it into
-  version control to share with collaborators)
-
-Non-interactive variants:
-
-```bash
-curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- install --scope=user --yes
-curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- install --scope=project --yes
-```
-
-If Codex CLI is currently running, restart it so the new skills are picked
-up. Invoke from inside Codex via `/skills` or by mentioning `$bds-workflow`;
-see the [Codex skills docs](https://developers.openai.com/codex/skills) for
-the exact UI.
+Invoke from inside Codex via `/skills` or by mentioning `$bds-workflow`; see
+the [Codex plugin docs](https://developers.openai.com/codex/plugins) and
+[Codex skills docs](https://developers.openai.com/codex/skills) for the exact
+UI.
 
 ### Update
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- update --scope=user --yes
+codex plugin marketplace upgrade beads-starter
 ```
 
-Replaces the three skill directories with the latest content. Errors out if
-no beads-starter skill is found in the chosen scope.
+Then open `/plugins` and update or reinstall the plugin if Codex shows a newer
+version.
 
 ### Uninstall
+
+Use `/plugins` in Codex and uninstall the `beads-starter` plugin.
+
+### Legacy direct-skill cleanup
+
+Older versions of this project used a bash installer that copied
+`bds-workflow/`, `bds-setup/`, and `bds-status/` directly into Codex skill
+directories. New installs should use the plugin path above. Use this cleanup
+script only to remove those legacy direct-skill copies:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/seungyeop-lee/beads-starter/main/on-demand/codex-installer.sh | bash -s -- uninstall --scope=user --yes
 ```
 
-Removes only `bds-workflow/`, `bds-setup/`, `bds-status/` from the chosen
-scope. Other skills under the same parent directory are untouched.
+Scopes:
+
+- `user` — `~/.codex/skills/bds-*/` (machine-wide; honors `$CODEX_HOME` if set)
+- `project` — `<cwd>/.agents/skills/bds-*/` (current repo only)
+
+The cleanup script removes only `bds-workflow/`, `bds-setup/`, and
+`bds-status/` from the chosen scope. Other skills under the same parent
+directory are untouched. Its old `install` and `update` commands now print the
+Codex plugin install instructions and exit.
 
 ## Initialize a repository
 
 In a repo that hasn't used bd yet, invoke the `bds-setup` skill:
 
 - Claude Code: `/bds-setup`
-- Codex CLI: `/skills` and pick `bds-setup`, or mention `$bds-setup`
+- Codex: `/skills` and pick `bds-setup`, or mention `$bds-setup`
 
 It walks you through bd install (if missing), prefix selection, and the four
 init/config commands.

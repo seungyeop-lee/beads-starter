@@ -1,0 +1,40 @@
+{
+  "name": "beads-starter",
+  "version": "0.3.1",
+  "description": "Explicit-invocation beads workflow plugin",
+  "author": {
+    "name": "seungyeop-lee",
+    "email": "xbeast7@gmail.com",
+    "url": "https://github.com/seungyeop-lee"
+  },
+  "homepage": "https://github.com/seungyeop-lee/beads-starter",
+  "repository": "https://github.com/seungyeop-lee/beads-starter",
+  "license": "MIT",
+  "keywords": [
+    "beads",
+    "workflow",
+    "skills",
+    "issues",
+    "task-management"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "beads-starter",
+    "shortDescription": "Explicit beads workflow skills",
+    "longDescription": "Three explicit-invocation skills for beads workflow setup, queue status, and task execution.",
+    "developerName": "seungyeop-lee",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/seungyeop-lee/beads-starter",
+    "defaultPrompt": [
+      "Use bds-workflow for this beads task.",
+      "Use bds-status to summarize the beads queue.",
+      "Use bds-setup to initialize beads in this repository."
+    ],
+    "brandColor": "#2F6B4F"
+  }
+}
