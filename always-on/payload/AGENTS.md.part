@@ -49,7 +49,10 @@ digraph agent_workflow {
 ```
 
 1. **Register** — ensure a beads issue exists (create if needed, or confirm an
-   existing one covers the scope).
+   existing one covers the scope). See
+   [docs/beads-starter/issue-content.md](docs/beads-starter/issue-content.md)
+   to choose the issue type, collect required intake fields, and then load the
+   matching type-specific detail rules.
 2. **Await approval** — do not start until the user approves. Multiple
    pre-registered issues may be approved together.
 3. **In progress** — transition before touching any file.
@@ -67,11 +70,11 @@ digraph agent_workflow {
    commit, or comment. **Required when step 6 feedback modified the
    recorded decision**, using the matching prefix so the two cases stay
    separable later:
-   - `Added via feedback: <item>. Commit: <hash>` — scope was added while
-     METHOD itself stayed intact.
-   - `Decision changed: <details>. Commit: <hash>` — METHOD itself was revised
-     (decision reversal). Also update the issue's `### Alternatives Considered`
-     from step 1.
+   - `Added via feedback: <item>. Commit: <hash>` — scope was added while the
+     recorded decision stayed intact.
+   - `Decision changed: <details>. Commit: <hash>` — the recorded decision was
+     revised. Also update the type-specific alternatives section from step 1 if
+     the matching issue-content rules require it.
 10. **Close** — close the issue with a reason.
 
 **Session signals:** only `approved` (step 1→3) and `done` (step 6→7) carry
@@ -95,68 +98,18 @@ Local-only shared-server (no Dolt remote). Do **not** run `bd dolt pull` /
 
 ### Issue Content
 
-- Initial descriptions should be intentionally lean. Record the minimum
-  self-contained contract needed to start work; do not pre-fill implementation
-  detail, speculative alternatives, or discoveries that have not happened yet.
-- Every description must expose both **WHAT** and **METHOD** under clear
-  headings (e.g., `## WHAT`, `## METHOD`).
-  - **WHAT** — the target problem/outcome (why this issue exists, what must
-    change).
-  - **METHOD** — the currently agreed approach at decision level: chosen
-    direction, known constraints, and scope boundaries that would change
-    execution. Low-level implementation detail belongs in later comments or
-    `notes`, after it becomes true.
-- Add an `### Alternatives Considered` subsection under METHOD **only when**
-  one of the following triggers fired:
-  - Two or more concrete implementations were actually compared during
-    discussion.
-  - The user rejected one approach and directed another.
-  - The step 6 feedback loop changed METHOD itself (preserve the prior METHOD
-    alongside the new one).
-
-  Do not create the subsection just to fill in alternatives that would be
-  rejected by common sense — the absence of the subsection itself signals "no
-  alternatives were discussed."
-
-- **Self-contained, not exhaustive** — the description must let an executor
-  who has not seen the conversation start work without asking follow-up
-  questions. Record only constraints that are already agreed and would change
-  execution; do not turn the issue into a transcript or full implementation
-  plan.
-- **Out of Scope** — when the boundary is non-trivial, add an
-  `### Out of Scope` subsection under METHOD listing what this issue
-  explicitly does not cover (related components deferred, files not to
-  touch, features excluded).
-- **Verification required for file-modifying issues** — add a
-  `## Verification` section with practical, checkable criteria known at
-  creation time (files that must exist or not exist, behaviors that must hold).
-  Step 5 of the Agent Workflow executes every item, so the section must be
-  unambiguous. Add new verification items later only when execution or feedback
-  makes them necessary.
-- **Progressive updates** — during execution, record meaningful discoveries,
-  decision changes, and scope additions as comments or `notes` when they become
-  true. The description is the starting contract, not the full history of the
-  work.
-- **Pre-creation self-check** — before `bd create`, re-read the description
-  and confirm a reader without conversation context could proceed. If any
-  agreed constraint is missing, or if unresolved choices would change
-  implementation, revise (or ask the user) before creating.
-
-- **Issue type** — `bug` (broken behavior) / `feature` (new functionality) /
-  `task` (work item: tests, docs, refactor) / `epic` (large feature with
-  subtasks) / `chore` (maintenance).
-- **Issue hierarchy** — do not create hierarchy by default. For a directly
-  executable unit of work, create a single `task`, `bug`, or `chore`. Use
-  hierarchy only when the work needs grouping:
-  - `feature` groups multiple executable issues for one independently
-    reviewable capability.
-  - `epic` groups multiple features for one larger initiative.
-  - When hierarchy is used, prefer `epic -> feature -> executable issue`,
-    where executable issue means `task`, `bug`, or `chore`.
-  Avoid attaching executable issues directly under an epic unless no meaningful
-  feature grouping exists.
-- **Priority** — `0` critical / `1` high / `2` medium (default) / `3` low / `4`
-  backlog.
+- Use [docs/beads-starter/issue-content.md](docs/beads-starter/issue-content.md)
+  as the common router before creating an issue.
+- Choose the issue type first, collect that type's required intake fields, then
+  read the linked type-specific rules:
+  - [docs/beads-starter/issue-content-bug.md](docs/beads-starter/issue-content-bug.md)
+  - [docs/beads-starter/issue-content-task.md](docs/beads-starter/issue-content-task.md)
+  - [docs/beads-starter/issue-content-feature.md](docs/beads-starter/issue-content-feature.md)
+  - [docs/beads-starter/issue-content-chore.md](docs/beads-starter/issue-content-chore.md)
+  - [docs/beads-starter/issue-content-epic.md](docs/beads-starter/issue-content-epic.md)
+- An issue is executable when it has a concrete deliverable and acceptance
+  criteria that can be verified directly. `bug`, `task`, `feature`, and `chore`
+  can all be executable. `epic` is grouping-oriented by default.
 
 ### Concurrency
 

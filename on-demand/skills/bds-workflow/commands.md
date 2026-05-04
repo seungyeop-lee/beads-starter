@@ -57,7 +57,7 @@ Then continue working on the current issue.
 
 `bd epic status` only recognizes an epic when **children depend on the epic** (not the other way around). Adding the dependency as `epic → child` causes `bd epic status` to return an empty list.
 
-Do not create hierarchy by default. For directly executable work, create a single `task`, `bug`, or `chore`. When work needs grouping, prefer `epic -> feature -> executable issue`, where executable issue means `task`, `bug`, or `chore`.
+Do not create hierarchy by default. For directly executable work, create a single `bug`, `task`, `feature`, or `chore`. When work needs grouping, prefer `epic -> grouping feature -> executable child issue`, where executable child issue usually means `bug`, `task`, or `chore`. Use an executable `feature` as its own issue when the deliverable is an independently reviewable capability rather than a grouping parent.
 
 ```
 # 1. Create the epic
@@ -67,7 +67,7 @@ bd create --title="Epic title" --description="..." --type=epic
 bd create --title="Feature A" --description="..." --type=feature --parent=<epic-id>
 bd create --title="Feature B" --description="..." --type=feature --parent=<epic-id>
 
-# 3. Create executable issues under a feature
+# 3. Create executable child issues under a grouping feature
 bd create --title="Task A" --description="..." --type=task --parent=<feature-id>
 bd create --title="Bug A" --description="..." --type=bug --parent=<feature-id>
 bd create --title="Chore A" --description="..." --type=chore --parent=<feature-id>

@@ -33,7 +33,13 @@ beads-starter/
 │       ├── AGENTS.md.part
 │       └── docs/beads-starter/
 │           ├── bd-setup.md.part
-│           └── beads-commands.md.part
+│           ├── beads-commands.md.part
+│           ├── issue-content.md.part
+│           ├── issue-content-bug.md.part
+│           ├── issue-content-task.md.part
+│           ├── issue-content-feature.md.part
+│           ├── issue-content-chore.md.part
+│           └── issue-content-epic.md.part
 ├── on-demand/                               # 명시적 발동 모드
 │   ├── .claude-plugin/plugin.json           # Claude Code 플러그인 메타
 │   ├── codex-installer.sh                   # Codex 배포용 bash 설치 스크립트
@@ -41,6 +47,11 @@ beads-starter/
 │       ├── bds-workflow/                    # 10단계 워크플로우 + 보조 파일
 │       │   ├── SKILL.md
 │       │   ├── issue-content.md
+│       │   ├── issue-content-bug.md
+│       │   ├── issue-content-task.md
+│       │   ├── issue-content-feature.md
+│       │   ├── issue-content-chore.md
+│       │   ├── issue-content-epic.md
 │       │   ├── shell-safety.md
 │       │   ├── commit-rules.md
 │       │   └── commands.md
@@ -54,7 +65,7 @@ beads-starter/
 파일들을 HTTPS로 가져와(이 레포 `main` 브랜치 GitHub raw) 대상 파일에
 주입합니다.
 
-이 네 파일 외에 `always-on/beads-starter.sh`는 대상 레포의 `CLAUDE.md`에
+이 마커 주입 파일들 외에 `always-on/beads-starter.sh`는 대상 레포의 `CLAUDE.md`에
 `@AGENTS.md` 임포트 한 줄을 추가합니다. 마커 기반이 아니라 "같은 줄이 없을
 때만 추가" 방식이며(`ensure_line`), 한 줄이 범용적이고 안정적이라 언인스톨
 시에는 `CLAUDE.md`를 건드리지 않습니다.
@@ -213,7 +224,7 @@ Codex CLI에 `on-demand/skills/`의 세 skill을 복사하는 bash 설치
 
 ## 모드 간 공통 콘텐츠 유지보수
 
-워크플로우 콘텐츠(10-step, WHAT/METHOD, shell safety 등)는 두 모드에
+워크플로우 콘텐츠(10-step, issue content routing, shell safety 등)는 두 모드에
 **의도적으로 중복 보관**됩니다. 자동 동기화는 강제하지 않되, 변경 시 양쪽을
 검토하기를 권고합니다:
 
@@ -278,7 +289,7 @@ PAYLOAD_BASE="file://${REPO_ROOT}/always-on/payload" bash "${REPO_ROOT}/always-o
 
 `always-on/beads-starter.sh` 변경 시 반드시 커버해야 할 시나리오:
 
-1. 최초 `install` (빈 디렉토리) — 4개 대상 파일이 마커 구간과 함께 생성.
+1. 최초 `install` (빈 디렉토리) — 대상 파일들이 마커 구간과 함께 생성.
 2. `install` 재실행(마커 밖에 사용자 콘텐츠를 추가해 둔 상태) — starter
    구간만 교체, 사용자 콘텐츠 보존.
 3. `update` — 미설치 상태에서는 에러, 설치 상태에서는 기존 prefix를

@@ -11,10 +11,11 @@ beads 워크플로우 규약을 대상 레포 파일(`.gitignore`, `AGENTS.md`,
 - `.gitignore` — beads 생성물(`.beads/`, `.dolt/`, `*.db`)을 소스 관리에서
   제외
 - `AGENTS.md` 섹션 — beads 기반 에이전트 워크플로우(10단계 흐름, 이슈 작성
-  규칙, 커밋 규약, 셸 안전성)
+  라우터, 커밋 규약, 셸 안전성)
 - `docs/beads-starter/bd-setup.md` — 최초 `bd init` 설정 가이드 (사용자가
   지정한 prefix로 템플릿됨)
 - `docs/beads-starter/beads-commands.md` — 자주 쓰는 `bd` 명령어 예제
+- `docs/beads-starter/issue-content*.md` — 이슈 작성 라우터와 타입별 상세 규칙
 
 주입되는 모든 콘텐츠는 `beads-starter` 마커 주석으로 감싸져 있어, 재실행 시
 내부만 갱신되고 언인스톨 시에도 마커 밖의 사용자 콘텐츠는 그대로 보존됩니다.

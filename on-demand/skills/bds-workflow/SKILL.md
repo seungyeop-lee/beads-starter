@@ -49,7 +49,7 @@ digraph agent_workflow {
 }
 ```
 
-1. **Register** — ensure a beads issue exists (create if needed, or confirm an existing one covers the scope). See [issue-content.md](issue-content.md) for description rules.
+1. **Register** — ensure a beads issue exists (create if needed, or confirm an existing one covers the scope). See [issue-content.md](issue-content.md) to choose the issue type, collect required intake fields, and then load the matching type-specific detail rules.
 2. **Await approval** — do not start until the user approves. Multiple pre-registered issues may be approved together.
 3. **In progress** — transition before touching any file.
 4. **Execute.**
@@ -58,8 +58,8 @@ digraph agent_workflow {
 7. **Commit** — stage only files for this issue and commit. Never run `git push`. See [commit-rules.md](commit-rules.md).
 8. **Comment** — include the commit hash and subject line.
 9. **Notes** — record durable context not already captured in the diff, commit, or comment. **Required when step 6 feedback modified the recorded decision**, using the matching prefix so the two cases stay separable later:
-   - `Added via feedback: <item>. Commit: <hash>` — scope was added while METHOD itself stayed intact.
-   - `Decision changed: <details>. Commit: <hash>` — METHOD itself was revised (decision reversal). Also update the issue's `### Alternatives Considered` from step 1.
+   - `Added via feedback: <item>. Commit: <hash>` — scope was added while the recorded decision stayed intact.
+   - `Decision changed: <details>. Commit: <hash>` — the recorded decision was revised. Also update the type-specific alternatives section from step 1 if the matching issue-content rules require it.
 10. **Close** — close the issue with a reason.
 
 **Session signals:** only `approved` (step 1→3) and `done` (step 6→7) carry workflow meaning.

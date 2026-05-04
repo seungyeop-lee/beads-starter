@@ -10,7 +10,18 @@ PAYLOAD_BASE="${PAYLOAD_BASE:-https://raw.githubusercontent.com/${STARTER_REPO_U
 
 SKILLS=(bds-workflow bds-setup bds-status)
 
-FILES_BDS_WORKFLOW=(SKILL.md issue-content.md shell-safety.md commit-rules.md commands.md)
+FILES_BDS_WORKFLOW=(
+  SKILL.md
+  issue-content.md
+  issue-content-bug.md
+  issue-content-task.md
+  issue-content-feature.md
+  issue-content-chore.md
+  issue-content-epic.md
+  shell-safety.md
+  commit-rules.md
+  commands.md
+)
 FILES_BDS_SETUP=(SKILL.md)
 FILES_BDS_STATUS=(SKILL.md)
 

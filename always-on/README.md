@@ -10,10 +10,12 @@ agents that read `AGENTS.md` see the workflow on every session.
 
 - `.gitignore` — excludes beads artifacts (`.beads/`, `.dolt/`, `*.db`)
 - `AGENTS.md` section — beads-based agent workflow (10-step flow, issue
-  authoring rules, commit conventions, shell safety)
+  authoring router, commit conventions, shell safety)
 - `docs/beads-starter/bd-setup.md` — initial `bd init` setup guide (templated
   with the prefix you choose)
 - `docs/beads-starter/beads-commands.md` — common `bd` command examples
+- `docs/beads-starter/issue-content*.md` — issue authoring router and
+  type-specific detail rules
 
 All injected content is wrapped in `beads-starter` marker comments, so
 re-running only refreshes the inside of those regions, and uninstalling leaves

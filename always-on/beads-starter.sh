@@ -208,6 +208,12 @@ do_inject() {
   inject_region "AGENTS.md" "AGENTS.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
   inject_region "docs/beads-starter/bd-setup.md" "docs/beads-starter/bd-setup.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
   inject_region "docs/beads-starter/beads-commands.md" "docs/beads-starter/beads-commands.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+  inject_region "docs/beads-starter/issue-content.md" "docs/beads-starter/issue-content.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+  inject_region "docs/beads-starter/issue-content-bug.md" "docs/beads-starter/issue-content-bug.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+  inject_region "docs/beads-starter/issue-content-task.md" "docs/beads-starter/issue-content-task.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+  inject_region "docs/beads-starter/issue-content-feature.md" "docs/beads-starter/issue-content-feature.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+  inject_region "docs/beads-starter/issue-content-chore.md" "docs/beads-starter/issue-content-chore.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
+  inject_region "docs/beads-starter/issue-content-epic.md" "docs/beads-starter/issue-content-epic.md.part" "$M_MD_OPEN" "$M_MD_CLOSE"
   ensure_line "CLAUDE.md" "@AGENTS.md"
   echo "Done. Next: follow docs/beads-starter/bd-setup.md to install and initialize bd."
 }
@@ -333,6 +339,12 @@ cmd_uninstall() {
   remove_region "AGENTS.md" "$M_MD_OPEN" "$M_MD_CLOSE"
   remove_region "docs/beads-starter/bd-setup.md" "$M_MD_OPEN" "$M_MD_CLOSE"
   remove_region "docs/beads-starter/beads-commands.md" "$M_MD_OPEN" "$M_MD_CLOSE"
+  remove_region "docs/beads-starter/issue-content.md" "$M_MD_OPEN" "$M_MD_CLOSE"
+  remove_region "docs/beads-starter/issue-content-bug.md" "$M_MD_OPEN" "$M_MD_CLOSE"
+  remove_region "docs/beads-starter/issue-content-task.md" "$M_MD_OPEN" "$M_MD_CLOSE"
+  remove_region "docs/beads-starter/issue-content-feature.md" "$M_MD_OPEN" "$M_MD_CLOSE"
+  remove_region "docs/beads-starter/issue-content-chore.md" "$M_MD_OPEN" "$M_MD_CLOSE"
+  remove_region "docs/beads-starter/issue-content-epic.md" "$M_MD_OPEN" "$M_MD_CLOSE"
   echo "Done."
   cat <<EOF
 
