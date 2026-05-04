@@ -64,7 +64,7 @@ digraph agent_workflow {
 
 **Session signals:** only `approved` (step 1→3) and `done` (step 6→7) carry workflow meaning.
 
-For bd command examples used in each step, see [commands.md](commands.md).
+Before running any `bd` command for this workflow, follow the CLI forms in [commands.md](commands.md). Do not rely on memory or inferred `bd` syntax.
 For shell-quoting safety when calling `bd` with narrative args, see [shell-safety.md](shell-safety.md).
 
 ## Operating Mode
