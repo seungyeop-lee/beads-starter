@@ -39,7 +39,7 @@ bd comments add <id> "commit: $(git rev-parse --short HEAD) feat(scope): ..."
 bd update <id> --notes="..."
 
 # 5. Close
-bd close <id>
+bd close <id> --reason="..."
 ```
 
 ## Mid-Execution Discovery
@@ -47,8 +47,8 @@ bd close <id>
 Do not interrupt the current issue. Create a new issue and link it with a `discovered-from` dependency:
 
 ```
-bd create --title="Newly discovered work" --description="..." --type=task
-bd dep add <new-id> <current-id>      # new-id depends on current-id
+new_id="$(bd create --title='Newly discovered work' --description='...' --type=task --silent)"
+bd dep add "$new_id" <current-id> --type=discovered-from      # new-id depends on current-id
 ```
 
 Then continue working on the current issue.
@@ -61,16 +61,16 @@ Do not create hierarchy by default. For directly executable work, create a singl
 
 ```
 # 1. Create the epic
-bd create --title="Epic title" --description="..." --type=epic
+bd create --title="Epic title" --description="..." --type=epic --silent
 
 # 2. Create features under the epic
-bd create --title="Feature A" --description="..." --type=feature --parent=<epic-id>
-bd create --title="Feature B" --description="..." --type=feature --parent=<epic-id>
+bd create --title="Feature A" --description="..." --type=feature --parent=<epic-id> --silent
+bd create --title="Feature B" --description="..." --type=feature --parent=<epic-id> --silent
 
 # 3. Create executable child issues under a grouping feature
-bd create --title="Task A" --description="..." --type=task --parent=<feature-id>
-bd create --title="Bug A" --description="..." --type=bug --parent=<feature-id>
-bd create --title="Chore A" --description="..." --type=chore --parent=<feature-id>
+bd create --title="Task A" --description="..." --type=task --parent=<feature-id> --silent
+bd create --title="Bug A" --description="..." --type=bug --parent=<feature-id> --silent
+bd create --title="Chore A" --description="..." --type=chore --parent=<feature-id> --silent
 ```
 
 Use `bd dep add` to link existing issues:
