@@ -89,9 +89,8 @@ Avoid attaching executable issues directly under an epic unless no meaningful fe
 Adjunct commands outside the main 10-step flow.
 
 - `bd defer <id>` — park an issue without closing it.
-- `bd supersede <id>` — mark an issue as replaced by another.
+- `bd supersede <id> --with <new-id>` — close an issue as replaced by another.
 - `bd stale` — surface issues that have gone quiet.
-- `bd orphans` — surface issues missing expected dependency links.
+- `bd orphans` — surface issues referenced in commits but still open.
 - `bd lint` — check issue hygiene.
-- `bd human <id>` — flag an issue as requiring a human decision.
 - `bd formula list` / `bd mol pour <name>` — structured workflow templates.

@@ -53,12 +53,13 @@ The prefix is used for issue IDs (e.g., `MYPROJ-42`). Default suggestion: the cu
 
 ### 4. Initialize
 
-Show all four commands together, then ask "Run all four?":
+Show all five commands together, then ask "Run all five?":
 
 ```bash
 bd init --shared-server --prefix <PREFIX> --skip-agents --skip-hooks
 bd config set no-git-ops true
 bd config set export.git-add false
+bd config set dolt.local-only true
 bd config unset sync.remote
 ```
 
@@ -103,7 +104,8 @@ From `bd doctor`:
 - `--skip-hooks` — do not install bd's git hooks.
 - `no-git-ops: true` — suppress bd's automatic Dolt push.
 - `export.git-add: false` — suppress automatic `git add` of `.beads/issues.jsonl`.
-- `unset sync.remote` — remove the default Dolt remote URL set by `bd init`.
+- `dolt.local-only: true` — declare local-only operation so bd does not (re)wire a Dolt sync remote on later init/repair runs. Must run after `bd init` (the key lives in `.beads/config.yaml`).
+- `unset sync.remote` — remove the Dolt remote URL already wired by the `bd init` above.
 
 ## After Setup
 
