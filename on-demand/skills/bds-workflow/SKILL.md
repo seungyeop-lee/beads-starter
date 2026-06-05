@@ -57,9 +57,9 @@ digraph agent_workflow {
 6. **Branch on response** — `done` → step 7. Anything else is feedback; return to step 4 (status stays `in_progress`).
 7. **Commit** — stage only files for this issue and commit. Never run `git push`. See [commit-rules.md](commit-rules.md).
 8. **Comment** — include the commit hash and subject line.
-9. **Notes** — record durable context not already captured in the diff, commit, or comment. **Required when step 6 feedback modified the recorded decision**, using the matching prefix so the two cases stay separable later:
-   - `Added via feedback: <item>. Commit: <hash>` — scope was added while the recorded decision stayed intact.
-   - `Decision changed: <details>. Commit: <hash>` — the recorded decision was revised. Also update the type-specific alternatives section from step 1 if the matching issue-content rules require it.
+9. **Notes** — record durable context not already captured in the diff, commit, or comment. Format notes as markdown, one list item per entry. `bd update --notes` replaces the whole field; read the existing notes first and append the new entry. **Required when step 6 feedback modified the recorded decision**, using the matching prefix so the two cases stay separable later:
+   - `- Added via feedback: <item>. Commit: <hash>` — scope was added while the recorded decision stayed intact.
+   - `- Decision changed: <details>. Commit: <hash>` — the recorded decision was revised. Also update the type-specific alternatives section from step 1 if the matching issue-content rules require it.
 10. **Close** — close the issue with a reason.
 
 **Session signals:** only `approved` (step 1→3) and `done` (step 6→7) carry workflow meaning.
